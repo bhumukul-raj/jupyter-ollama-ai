@@ -79,3 +79,4 @@ ENV/
 !jest.config.js
 !.pnp.loader.mjs
 !.pnp.cjs 
+!lucide-react.d.ts
