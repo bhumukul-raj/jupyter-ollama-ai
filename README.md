@@ -69,37 +69,42 @@ source venv/bin/activate  # On Windows: venv\Scripts\activate
 pip install jupyter_packaging jupyterlab>=4.0.0
 ```
 
-4. Build the extension:
+4. Install the package in development mode:
+```bash
+pip install -e .
+```
+
+5. Build the extension:
 ```bash
 cd ollama_jupyter_ai/labextension
 yarn install
 yarn build:prod
+cd ../..
 ```
 
-5. Install the package in development mode:
+6. Run the post-build hook manually to ensure proper file structure:
 ```bash
-cd ../../
-pip install -e .
+python -c "from setup import post_build_hook; post_build_hook(build_cmd='build:prod', path='./ollama_jupyter_ai/labextension', build_dir='./ollama_jupyter_ai/static')"
 ```
 
-6. Manually add the extension to JupyterLab (workaround for registration issues):
+7. Manually copy the extension files to the JupyterLab extensions directory:
 ```bash
 mkdir -p venv/share/jupyter/labextensions/ollama-jupyter-ai
-cp -r ollama_jupyter_ai/labextension/dist/* venv/share/jupyter/labextensions/ollama-jupyter-ai/
+cp -r ollama_jupyter_ai/static/* venv/share/jupyter/labextensions/ollama-jupyter-ai/
 ```
 
-7. Rebuild JupyterLab:
+8. Rebuild JupyterLab:
 ```bash
 jupyter lab build
 ```
 
-8. Verify the extension is installed:
+9. Verify the extension is installed:
 ```bash
 jupyter labextension list
 # Should show "ollama-jupyter-ai" in the list
 ```
 
-9. Start JupyterLab:
+10. Start JupyterLab:
 ```bash
 jupyter lab
 ```

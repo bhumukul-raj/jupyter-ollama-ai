@@ -285,10 +285,47 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@fortawesome/fontawesome-common-types@npm:6.7.2":
+  version: 6.7.2
+  resolution: "@fortawesome/fontawesome-common-types@npm:6.7.2"
+  checksum: 9c17f03032e56b8e8e996e5b2c15c8b47baf6f8d5c0703025b0b2711907245f94a7032b3da52d2714b5aeff1c14d3535e6869a82086136dcacae9ccd479dc6a2
+  languageName: node
+  linkType: hard
+
 "@fortawesome/fontawesome-free@npm:^5.12.0":
   version: 5.15.4
   resolution: "@fortawesome/fontawesome-free@npm:5.15.4"
   checksum: 32281c3df4075290d9a96dfc22f72fadb3da7055d4117e48d34046b8c98032a55fa260ae351b0af5d6f6fb57a2f5d79a4abe52af456da35195f7cb7dda27b4a2
+  languageName: node
+  linkType: hard
+
+"@fortawesome/fontawesome-svg-core@npm:^6.7.2":
+  version: 6.7.2
+  resolution: "@fortawesome/fontawesome-svg-core@npm:6.7.2"
+  dependencies:
+    "@fortawesome/fontawesome-common-types": 6.7.2
+  checksum: b3c269545d99202111d8334955466a7f050c38cf80c6be5fdd36baae36822421e0806986db8d1670834fab6595ce527e06ea58248e053703722d03f19eccbb82
+  languageName: node
+  linkType: hard
+
+"@fortawesome/free-solid-svg-icons@npm:^6.7.2":
+  version: 6.7.2
+  resolution: "@fortawesome/free-solid-svg-icons@npm:6.7.2"
+  dependencies:
+    "@fortawesome/fontawesome-common-types": 6.7.2
+  checksum: 457cc180399be57efd1a5908aaa76c8530dec5469fa676904179f73976c10bb030c6de9bf866e2a83e042cfd23856ba5fa1ca5acdb83f4e90c6b4aa9e5412d3c
+  languageName: node
+  linkType: hard
+
+"@fortawesome/react-fontawesome@npm:^0.2.2":
+  version: 0.2.2
+  resolution: "@fortawesome/react-fontawesome@npm:0.2.2"
+  dependencies:
+    prop-types: ^15.8.1
+  peerDependencies:
+    "@fortawesome/fontawesome-svg-core": ~1 || ~6
+    react: ">=16.3"
+  checksum: e4bed35bfb7fc88b5bcf2305d08ee1835b82fa7705945c4d310df33bb747b05ef07a33ac9db643c8870ca4f835228978290d84d82f2c6c6a70b9ab4c886731a6
   languageName: node
   linkType: hard
 
@@ -855,7 +892,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@jupyterlab/services@npm:^7.3.5":
+"@jupyterlab/services@npm:^7.0.0, @jupyterlab/services@npm:^7.3.5":
   version: 7.3.5
   resolution: "@jupyterlab/services@npm:7.3.5"
   dependencies:
@@ -3706,15 +3743,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lucide-react@npm:^0.294.0":
-  version: 0.294.0
-  resolution: "lucide-react@npm:0.294.0"
-  peerDependencies:
-    react: ^16.5.1 || ^17.0.0 || ^18.0.0
-  checksum: d8e741603209a0e0400b2d71e676aff660251f7e078f8be72a2fbaf57876946a76571675230b7c0f7d27d8a9344d0c788dba14177d35f4ba911897282eaae22a
-  languageName: node
-  linkType: hard
-
 "markdown-to-jsx@npm:^7.4.1":
   version: 7.7.4
   resolution: "markdown-to-jsx@npm:7.7.4"
@@ -3956,11 +3984,14 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "ollama-jupyter-ai@workspace:."
   dependencies:
+    "@fortawesome/fontawesome-svg-core": ^6.7.2
+    "@fortawesome/free-solid-svg-icons": ^6.7.2
+    "@fortawesome/react-fontawesome": ^0.2.2
     "@jupyterlab/application": ^4.0.0
     "@jupyterlab/apputils": ^4.0.0
     "@jupyterlab/builder": ^4.3.5
     "@jupyterlab/notebook": ^4.0.0
-    "@jupyterlab/services": ^7.3.5
+    "@jupyterlab/services": ^7.0.0
     "@jupyterlab/ui-components": ^4.0.0
     "@lumino/widgets": ^2.0.0
     "@types/node": ^20.0.0
@@ -3969,7 +4000,6 @@ __metadata:
     "@typescript-eslint/eslint-plugin": ^6.14.0
     "@typescript-eslint/parser": ^6.14.0
     axios: ^1.6.7
-    lucide-react: ^0.294.0
     npm-run-all: ^4.1.5
     react: ^18.2.0
     react-dom: ^18.2.0

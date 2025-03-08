@@ -10,7 +10,7 @@ node_modules/
 ollama_jupyter_ai/static/
 lib/
 tsconfig.tsbuildinfo
-
+.yarn/
 # Development
 .ipynb_checkpoints
 .vscode/
