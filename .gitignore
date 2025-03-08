@@ -1,0 +1,78 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+# Don't ignore all lib/ directories - be more specific
+# lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Node.js / JavaScript / TypeScript
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions
+
+# JupyterLab Extension specific
+# Do NOT ignore labextension directory as it contains source code
+# Only ignore specific build artifacts
+ollama_jupyter_ai/labextension/static/
+ollama_jupyter_ai/labextension/dist/
+ollama_jupyter_ai/labextension/lib/
+ollama_jupyter_ai/labextension/node_modules/
+jupyterlab_*_extension/
+jupyter-config/
+
+# Build outputs
+tsconfig.tsbuildinfo
+*.tsbuildinfo
+*.js.map
+*.d.ts
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# Virtual Environments
+venv/
+env/
+ENV/
+
+# IDE specific files
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+
+# Local Ollama configuration
+.ollama/
+
+# Don't ignore these important files
+!package.json
+!tsconfig.json
+!yarn.lock
+!.yarnrc.yml
+!babel.config.js
+!webpack.config.js
+!jest.config.js 

@@ -1,0 +1,473 @@
+/* Styles for the Ollama AI Assistant extension */
+
+.jp-AIAssistant {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background-color: var(--jp-layout-color1);
+  color: var(--jp-ui-font-color1);
+  font-family: var(--jp-ui-font-family);
+  overflow: hidden;
+}
+
+.jp-AIAssistant-header {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--jp-border-color2);
+  background-color: var(--jp-layout-color2);
+  gap: 8px;
+}
+
+.jp-AIAssistant-title {
+  font-size: 14px;
+  font-weight: 600;
+  flex: 1;
+}
+
+.jp-AIAssistant-modelSelector {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.jp-AIAssistant-modelSelect {
+  flex: 1;
+  min-width: 100px;
+  padding: 4px 8px;
+  border: 1px solid var(--jp-border-color1);
+  border-radius: 4px;
+  background-color: var(--jp-layout-color1);
+  color: var(--jp-ui-font-color1);
+  font-size: 12px;
+}
+
+.jp-AIAssistant-modelSelect:focus {
+  outline: none;
+  border-color: var(--jp-brand-color1);
+}
+
+.jp-AIAssistant-modelSelect:disabled {
+  background-color: var(--jp-layout-color3);
+  opacity: 0.6;
+}
+
+.jp-AIAssistant-modelError {
+  color: var(--jp-error-color1);
+  font-size: 12px;
+  margin-top: 4px;
+  padding: 4px 0;
+  width: 100%;
+}
+
+/* Tabs */
+.jp-AIAssistant-tabs {
+  display: flex;
+  border-bottom: 1px solid var(--jp-border-color2);
+  background-color: var(--jp-layout-color2);
+}
+
+.jp-AIAssistant-tab {
+  padding: 8px 16px;
+  border: none;
+  background: none;
+  font-size: 13px;
+  color: var(--jp-ui-font-color2);
+  cursor: pointer;
+  flex: 1;
+  text-align: center;
+  border-bottom: 2px solid transparent;
+}
+
+.jp-AIAssistant-tab:hover {
+  background-color: var(--jp-layout-color3);
+  color: var(--jp-ui-font-color1);
+}
+
+.jp-AIAssistant-tab-active {
+  background-color: var(--jp-layout-color1);
+  color: var(--jp-brand-color1);
+  border-bottom: 2px solid var(--jp-brand-color1);
+}
+
+.jp-AIAssistant-conversation {
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  height: calc(100% - 120px);
+  overflow-y: auto;
+  background-color: var(--jp-layout-color1);
+  border-radius: 8px;
+  border: 1px solid var(--jp-border-color1);
+}
+
+.jp-AIAssistant-message {
+  padding: 12px;
+  margin: 8px 0;
+  border-radius: 8px;
+  background-color: var(--jp-layout-color2);
+  font-size: 13px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.jp-AIAssistant-message-user {
+  background-color: var(--jp-layout-color2);
+  margin-left: auto;
+  max-width: 80%;
+}
+
+.jp-AIAssistant-message-assistant {
+  background-color: var(--jp-layout-color2);
+  margin-right: auto;
+  max-width: 80%;
+}
+
+.jp-AIAssistant-message-loading {
+  opacity: 0.7;
+  position: relative;
+}
+
+.jp-AIAssistant-message-loading::after {
+  content: "...";
+  display: inline-block;
+  margin-left: 4px;
+  animation: ellipsis-dot 1.5s infinite;
+  width: 12px;
+  overflow: hidden;
+}
+
+@keyframes ellipsis-dot {
+  0% { content: "."; }
+  33% { content: ".."; }
+  66% { content: "..."; }
+  100% { content: "."; }
+}
+
+/* Remove old animations */
+.jp-AIAssistant-loading::after {
+  display: none;
+}
+
+@keyframes ellipsis {
+  0% { display: none; }
+  100% { display: none; }
+}
+
+.jp-AIAssistant-error {
+  background-color: var(--jp-error-color2);
+  color: var(--jp-ui-font-color1);
+}
+
+.jp-AIAssistant-retry {
+  display: block;
+  margin-top: 8px;
+  padding: 4px 12px;
+  background-color: var(--jp-layout-color3);
+  color: var(--jp-ui-font-color1);
+  border: 1px solid var(--jp-border-color1);
+  border-radius: 4px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.jp-AIAssistant-retry:hover {
+  background-color: var(--jp-layout-color4);
+}
+
+.jp-AIAssistant-retry:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.jp-AIAssistant-input {
+  padding: 8px 12px;
+  border-top: 1px solid var(--jp-border-color2);
+  background-color: var(--jp-layout-color1);
+}
+
+.jp-AIAssistant-input-form {
+  display: flex;
+  gap: 8px;
+}
+
+.jp-AIAssistant-input-textarea {
+  flex: 1;
+  min-height: 40px;
+  max-height: 80px;
+  padding: 8px 12px;
+  border: 1px solid var(--jp-border-color1);
+  border-radius: 4px;
+  resize: vertical;
+  font-family: var(--jp-ui-font-family);
+  font-size: 13px;
+  line-height: 1.5;
+  background-color: var(--jp-layout-color0);
+  color: var(--jp-ui-font-color1);
+}
+
+.jp-AIAssistant-input-textarea:focus {
+  outline: none;
+  border-color: var(--jp-brand-color1);
+}
+
+.jp-AIAssistant-input-button {
+  padding: 8px 12px;
+  background-color: var(--jp-brand-color1);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.jp-AIAssistant-input-button:hover {
+  background-color: var(--jp-brand-color0);
+}
+
+.jp-AIAssistant-input-button:disabled {
+  background-color: var(--jp-layout-color3);
+  color: var(--jp-ui-font-color2);
+  cursor: not-allowed;
+}
+
+/* Action button for the Analyze and Improve tabs */
+.jp-AIAssistant-action {
+  padding: 12px;
+  border-top: 1px solid var(--jp-border-color2);
+  background-color: var(--jp-layout-color1);
+}
+
+.jp-AIAssistant-input-actions {
+  display: flex;
+  gap: 8px;
+  margin-left: 8px;
+}
+
+.jp-AIAssistant-action-button {
+  background-color: var(--jp-brand-color1);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 6px 12px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  margin: 0 4px;
+}
+
+.jp-AIAssistant-action-button-stop {
+  background-color: var(--jp-error-color1);
+}
+
+.jp-AIAssistant-action-button-refresh {
+  background-color: var(--jp-success-color1);
+}
+
+.jp-AIAssistant-action-button:hover {
+  background-color: var(--jp-brand-color0);
+}
+
+.jp-AIAssistant-action-button:disabled {
+  background-color: var(--jp-layout-color3);
+  color: var(--jp-ui-font-color2);
+  cursor: not-allowed;
+}
+
+/* Timestamp display */
+.jp-AIAssistant-timestamp {
+  font-size: 10px;
+  color: var(--jp-ui-font-color2);
+  margin-top: 6px;
+  text-align: right;
+  font-style: italic;
+}
+
+.jp-AIAssistant-timestamp-user {
+  text-align: left;
+  color: var(--jp-ui-font-color3);
+}
+
+.jp-AIAssistant-timestamp-loading {
+  color: var(--jp-info-color2);
+}
+
+.jp-AIAssistant-timestamp-error {
+  color: var(--jp-error-color1);
+}
+
+.jp-AIAssistant-cache-indicator {
+  display: inline-block;
+  color: var(--jp-success-color0);
+  font-weight: bold;
+  margin-left: 4px;
+  padding: 1px 5px;
+  border-radius: 4px;
+  background-color: var(--jp-success-color3);
+}
+
+.jp-AIAssistant-scrollControl {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+  font-size: 12px;
+}
+
+.jp-AIAssistant-scrollControl input {
+  margin-right: 5px;
+}
+
+/* Enhanced text formatting */
+.jp-AIAssistant-text {
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.jp-AIAssistant-formatted-content {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Code block styling */
+.jp-AIAssistant-code-block {
+  margin: 8px 0;
+  border-radius: 6px;
+  overflow: hidden;
+  background-color: var(--jp-layout-color3);
+  border: 1px solid var(--jp-border-color1);
+}
+
+.jp-AIAssistant-code-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 10px;
+  background-color: var(--jp-layout-color4);
+  border-bottom: 1px solid var(--jp-border-color1);
+  color: var(--jp-ui-font-color1);
+  font-size: 12px;
+  font-family: var(--jp-code-font-family);
+}
+
+.jp-AIAssistant-code-language {
+  font-weight: bold;
+  text-transform: lowercase;
+}
+
+.jp-AIAssistant-code {
+  margin: 0;
+  padding: 12px;
+  overflow-x: auto;
+  font-size: 13px;
+  line-height: 1.4;
+  font-family: var(--jp-code-font-family);
+  background-color: var(--jp-layout-color3);
+  color: var(--jp-content-font-color1);
+  border-radius: 0 0 6px 6px;
+}
+
+/* Syntax highlighting classes with vibrant colors */
+.jp-AIAssistant-code .jp-AIAssistant-code-keyword {
+  color: #ff79c6;
+  font-weight: bold;
+}
+
+.jp-AIAssistant-code .jp-AIAssistant-code-builtin {
+  color: #bd93f9;
+}
+
+.jp-AIAssistant-code .jp-AIAssistant-code-string {
+  color: #f1fa8c;
+}
+
+.jp-AIAssistant-code .jp-AIAssistant-code-comment {
+  color: #6272a4;
+  font-style: italic;
+}
+
+.jp-AIAssistant-code .jp-AIAssistant-code-number {
+  color: #bd93f9;
+}
+
+.jp-AIAssistant-code .jp-AIAssistant-code-function {
+  color: #50fa7b;
+  font-weight: bold;
+}
+
+.jp-AIAssistant-code .jp-AIAssistant-code-operator {
+  color: #ff79c6;
+}
+
+.jp-AIAssistant-code .jp-AIAssistant-code-variable {
+  color: #8be9fd;
+}
+
+/* Light theme adjustments */
+.jp-Theme-light .jp-AIAssistant-code-keyword {
+  color: #d73a49;
+}
+
+.jp-Theme-light .jp-AIAssistant-code-builtin {
+  color: #6f42c1;
+}
+
+.jp-Theme-light .jp-AIAssistant-code-string {
+  color: #032f62;
+}
+
+.jp-Theme-light .jp-AIAssistant-code-comment {
+  color: #6a737d;
+}
+
+.jp-Theme-light .jp-AIAssistant-code-number {
+  color: #005cc5;
+}
+
+.jp-Theme-light .jp-AIAssistant-code-function {
+  color: #6f42c1;
+}
+
+.jp-Theme-light .jp-AIAssistant-code-operator {
+  color: #d73a49;
+}
+
+.jp-Theme-light .jp-AIAssistant-code-variable {
+  color: #24292e;
+}
+
+/* Syntax highlighting classes */
+.jp-AIAssistant-code .keyword {
+  color: var(--jp-mirror-editor-keyword-color);
+  font-weight: bold;
+}
+
+.jp-AIAssistant-code .string {
+  color: var(--jp-mirror-editor-string-color);
+}
+
+.jp-AIAssistant-code .comment {
+  color: var(--jp-mirror-editor-comment-color);
+  font-style: italic;
+}
+
+.jp-AIAssistant-code .number {
+  color: var(--jp-mirror-editor-number-color);
+}
+
+.jp-AIAssistant-code .function {
+  color: var(--jp-mirror-editor-def-color);
+  font-weight: bold;
+}
+
+.jp-AIAssistant-code .operator {
+  color: var(--jp-layout-color5);
+}
+
+.jp-AIAssistant-code .variable {
+  color: var(--jp-mirror-editor-variable-color);
+} 

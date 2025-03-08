@@ -1,0 +1,77 @@
+{
+  "name": "ollama-jupyter-ai",
+  "version": "0.1.0",
+  "description": "AI-powered JupyterLab extension using Ollama for local LLM integration",
+  "keywords": [
+    "jupyter",
+    "jupyterlab",
+    "jupyterlab-extension",
+    "ollama",
+    "ai",
+    "assistant"
+  ],
+  "homepage": "https://github.com/yourusername/ollama-jupyter-ai",
+  "bugs": {
+    "url": "https://github.com/yourusername/ollama-jupyter-ai/issues"
+  },
+  "license": "MIT",
+  "author": {
+    "name": "Your Name"
+  },
+  "files": [
+    "lib/**/*.{d.ts,eot,gif,html,jpg,js,js.map,json,png,svg,woff2,ttf}",
+    "style/**/*.{css,js,eot,gif,html,jpg,json,png,svg,woff2,ttf}"
+  ],
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "style": "style/index.css",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/ollama-jupyter-ai.git"
+  },
+  "scripts": {
+    "build": "yarn build:lib && yarn build:labextension:dev",
+    "build:prod": "yarn clean && yarn build:lib && yarn build:labextension",
+    "build:labextension": "jupyter labextension build .",
+    "build:labextension:dev": "jupyter labextension build --development True .",
+    "build:lib": "tsc",
+    "clean": "yarn clean:lib",
+    "clean:lib": "rimraf lib tsconfig.tsbuildinfo",
+    "clean:labextension": "rimraf ollama_jupyter_ai/labextension",
+    "clean:all": "yarn clean:lib && yarn clean:labextension",
+    "install:extension": "yarn build",
+    "watch": "run-p watch:src watch:labextension",
+    "watch:src": "tsc -w",
+    "watch:labextension": "jupyter labextension watch ."
+  },
+  "dependencies": {
+    "@jupyterlab/application": "^4.0.0",
+    "@jupyterlab/apputils": "^4.0.0",
+    "@jupyterlab/notebook": "^4.0.0",
+    "@jupyterlab/services": "^7.3.5",
+    "@jupyterlab/ui-components": "^4.0.0",
+    "@lumino/widgets": "^2.0.0",
+    "axios": "^1.6.7",
+    "lucide-react": "^0.294.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "@jupyterlab/builder": "^4.3.5",
+    "@types/node": "^20.0.0",
+    "@types/react": "^18.2.43",
+    "@types/react-dom": "^18.2.17",
+    "@typescript-eslint/eslint-plugin": "^6.14.0",
+    "@typescript-eslint/parser": "^6.14.0",
+    "npm-run-all": "^4.1.5",
+    "rimraf": "^5.0.0",
+    "typescript": "^5.2.2"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "jupyterlab": {
+    "extension": true,
+    "outputDir": "ollama_jupyter_ai/labextension"
+  }
+}
