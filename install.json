@@ -6,7 +6,7 @@
     {
       "name": "ollama-jupyter-ai",
       "description": "AI-powered JupyterLab extension using Ollama for local LLM integration",
-      "path": "ollama_jupyter_ai/labextension"
+      "path": "ollama_jupyter_ai/static"
     }
   ]
 } 

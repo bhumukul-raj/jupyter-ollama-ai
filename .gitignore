@@ -1,82 +1,21 @@
-# Python
+# Python build artifacts
 __pycache__/
 *.py[cod]
-*$py.class
-*.so
-.Python
 build/
-develop-eggs/
 dist/
-downloads/
-eggs/
-.eggs/
-# Don't ignore all lib/ directories - be more specific
-# lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-*.egg-info/
-.installed.cfg
-*.egg
+ollama_jupyter_ai.egg-info/
 
-# Node.js / JavaScript / TypeScript
+# Node/TypeScript build artifacts
 node_modules/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-# Don't ignore Yarn PnP files as they should be committed
-# .pnp.*
-.yarn/*
-!.yarn/patches
-!.yarn/plugins
-!.yarn/releases
-!.yarn/sdks
-!.yarn/versions
-
-# JupyterLab Extension specific
-# Do NOT ignore labextension directory as it contains source code
-# Only ignore specific build artifacts
-ollama_jupyter_ai/labextension/static/
-ollama_jupyter_ai/labextension/dist/
-ollama_jupyter_ai/labextension/lib/
-ollama_jupyter_ai/labextension/node_modules/
-jupyterlab_*_extension/
-jupyter-config/
-
-# Build outputs
+ollama_jupyter_ai/static/
+lib/
 tsconfig.tsbuildinfo
-*.tsbuildinfo
-*.js.map
-*.d.ts
 
-# Jupyter Notebook
+# Development
 .ipynb_checkpoints
-
-# Virtual Environments
-venv/
-env/
-ENV/
-
-# IDE specific files
-.idea/
 .vscode/
-*.swp
-*.swo
 .DS_Store
 
-# Local Ollama configuration
-.ollama/
+# Local Ollama
 
-# Don't ignore these important files
-!package.json
-!tsconfig.json
-!yarn.lock
-!.yarnrc.yml
-!babel.config.js
-!webpack.config.js
-!jest.config.js
-!.pnp.loader.mjs
-!.pnp.cjs 
-!lucide-react.d.ts
+venv/

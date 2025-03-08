@@ -18,31 +18,39 @@ A powerful AI-powered assistant extension for JupyterLab that uses Ollama for lo
 - Node.js >= 18.0.0
 - Python >= 3.8
 - Ollama (for local AI processing)
+- jupyter_packaging (for extension installation)
 
 ## Installation
 
 ### Using pip (for end users)
 
-1. Install the extension:
+1. Install jupyter_packaging first (required for building the extension):
+```bash
+pip install jupyter_packaging
+```
+
+2. Install the extension:
 ```bash
 pip install ollama-jupyter-ai
 ```
 
-2. Install and start Ollama:
+3. Install and start Ollama:
 ```bash
 # Install Ollama (visit https://ollama.ai for installation instructions)
-# Pull a compatible model (llama3 is the default in our configuration)
-ollama pull llama3
+# Pull a compatible model (like mistral)
+ollama pull mistral
 # Start the Ollama service
 ollama serve
 ```
 
-3. Restart JupyterLab:
+4. Restart JupyterLab:
 ```bash
 jupyter lab
 ```
 
-### Development Installation
+### Manual Installation (if pip install doesn't work)
+
+If the standard installation doesn't register the extension properly, follow these steps:
 
 1. Clone the repository:
 ```bash
@@ -56,35 +64,39 @@ python -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
 ```
 
-3. Install JupyterLab:
+3. Install required dependencies:
 ```bash
-pip install jupyterlab>=4.0.0
+pip install jupyter_packaging jupyterlab>=4.0.0
 ```
 
-4. Navigate to the labextension directory:
+4. Build the extension:
 ```bash
 cd ollama_jupyter_ai/labextension
-```
-
-5. Install Node.js dependencies:
-```bash
 yarn install
-```
-
-6. Build the extension:
-```bash
 yarn build:prod
 ```
 
-7. Go back to the root directory and install the package in development mode:
+5. Install the package in development mode:
 ```bash
-cd ../..
+cd ../../
 pip install -e .
 ```
 
-8. Build JupyterLab with the extension:
+6. Manually add the extension to JupyterLab (workaround for registration issues):
+```bash
+mkdir -p venv/share/jupyter/labextensions/ollama-jupyter-ai
+cp -r ollama_jupyter_ai/labextension/dist/* venv/share/jupyter/labextensions/ollama-jupyter-ai/
+```
+
+7. Rebuild JupyterLab:
 ```bash
 jupyter lab build
+```
+
+8. Verify the extension is installed:
+```bash
+jupyter labextension list
+# Should show "ollama-jupyter-ai" in the list
 ```
 
 9. Start JupyterLab:
@@ -92,125 +104,52 @@ jupyter lab build
 jupyter lab
 ```
 
-## Build Process Explained
+## Troubleshooting
 
-The build process involves several steps:
+### Extension Not Appearing in JupyterLab
 
-1. **TypeScript Compilation**: Converts TypeScript code to JavaScript
-   ```bash
-   yarn build:lib  # Runs tsc to compile TypeScript
-   ```
+If the extension doesn't appear after standard installation:
 
-2. **JupyterLab Extension Build**: Bundles the extension for JupyterLab
-   ```bash
-   yarn build:labextension  # Creates the final extension bundle
-   ```
-
-3. **Python Package Build**: Sets up the Python package structure
-   ```bash
-   pip install -e .  # Installs the Python package in development mode
-   ```
-
-4. **JupyterLab Integration**: Registers and enables the extension with JupyterLab
-   ```bash
-   jupyter lab build  # Builds JupyterLab with the new extension
-   ```
-
-## Project Structure
-
-```
-project-ollama/
-├── ollama_jupyter_ai/           # Main Python package
-│   ├── __init__.py              # Package initialization and extension path registration
-│   └── labextension/            # JupyterLab extension directory
-│       ├── src/                 # TypeScript source code
-│       │   ├── components/      # React components
-│       │   │   └── AIAssistantPanel.tsx  # Main chat interface component
-│       │   ├── services/        # Service modules
-│       │   │   ├── OllamaService.ts      # Ollama API integration
-│       │   │   └── NotebookService.ts    # Notebook manipulation service
-│       │   ├── types/           # TypeScript type definitions
-│       │   ├── index.ts         # Extension entry point
-│       │   └── widget.tsx       # JupyterLab widget implementation
-│       ├── style/               # CSS styling
-│       │   ├── base.css         # Core component styles
-│       │   └── index.css        # Style entry point
-│       ├── package.json         # Node.js package configuration
-│       ├── tsconfig.json        # TypeScript configuration
-│       └── [other build files]  # Various build configuration files
-├── setup.py                     # Python package setup script
-├── pyproject.toml               # Python build system configuration
-├── install.json                 # JupyterLab extension metadata
-└── README.md                    # This documentation file
-```
-
-## GitHub Integration
-
-### Setting Up a GitHub Repository
-
-1. Create a new repository on GitHub:
-   - Go to github.com and click "New repository"
-   - Name it "ollama-jupyter-ai" (or your preferred name)
-   - Add a description
-   - Choose public or private visibility
-   - Click "Create repository"
-
-2. Initialize your local repository:
+1. Check if the extension is listed:
 ```bash
-git init
-git add .
-git commit -m "Initial commit"
+jupyter labextension list
 ```
 
-3. Connect and push to GitHub:
-```bash
-git remote add origin https://github.com/yourusername/ollama-jupyter-ai.git
-git branch -M main
-git push -u origin main
+2. If it's not listed, try manual installation steps above.
+
+3. Check browser console for errors (F12 or right-click > Inspect > Console)
+
+### Directory Structure Issues
+
+The extension relies on a specific directory structure. If you encounter build errors:
+
+1. Check `outputDir` settings in package.json files to avoid recursive nesting:
+   - Root package.json should point to appropriate output location
+   - labextension/package.json should have `"outputDir": "dist"`
+
+2. Ensure proper Python package registration in `__init__.py`:
+   - `_jupyter_labextension_paths()` should return the correct path
+
+3. Manually copy the built extension to JupyterLab's extension directory (as in installation step 6)
+
+### Dependency Version Conflicts
+
+If you encounter version conflicts:
+
+1. Update @jupyterlab/services in package.json:
+```
+"@jupyterlab/services": "^7.0.0"
 ```
 
-### Making Changes and Pushing Updates
-
-1. Make your changes to the codebase
-
-2. Commit and push changes:
-```bash
-git add .
-git commit -m "Description of your changes"
-git push origin main
-```
-
-### Creating Releases
-
-1. Tag a release version:
-```bash
-git tag -a v0.1.0 -m "Version 0.1.0"
-git push origin v0.1.0
-```
-
-2. On GitHub, go to "Releases" and create a new release from your tag
+2. Rebuild with compatible versions.
 
 ## Usage Guide
-
-### Starting the Extension
-
-1. Ensure Ollama is running:
-```bash
-ollama serve
-```
-
-2. Launch JupyterLab:
-```bash
-jupyter lab
-```
-
-3. The "Ollama AI Assistant" tab should appear in the left sidebar
 
 ### Working with the Assistant
 
 1. **Opening the Assistant**:
-   - Click on the "Ollama AI Assistant" tab in the left sidebar
-   - The assistant panel will open, showing a chat interface
+   - The assistant panel will appear in the right sidebar of JupyterLab
+   - If it doesn't appear, click on the "Ollama AI Assistant" icon in the right sidebar
 
 2. **Asking Questions**:
    - Type your question in the input box at the bottom of the panel
@@ -233,41 +172,55 @@ jupyter lab
    - Ask for help with data manipulation, visualization, or statistical analysis
    - Get suggestions for the best libraries and approaches for your specific task
 
-### Troubleshooting
-
-If the extension doesn't appear or work correctly:
-
-1. Check if Ollama is running:
-```bash
-curl http://localhost:11434/api/version
-```
-
-2. Verify the extension is installed:
-```bash
-jupyter labextension list
-```
-
-3. Check browser console for errors (F12 or right-click > Inspect > Console)
-
-4. Rebuild the extension if needed:
-```bash
-jupyter lab clean
-jupyter lab build
-```
-
-5. Restart JupyterLab after rebuilding
-
-## Configuration Options
+### Configuration Options
 
 The extension uses default settings that can be adjusted in the source code:
 
-- **Ollama Model**: Change the default model in `OllamaService.ts`
-- **Ollama URL**: Modify the base URL if Ollama is running on a different port
+- **Ollama Model**: Change the default model in `OllamaService.ts` (default is mistral)
+- **Ollama URL**: Modify the base URL if Ollama is running on a different port or host
 - **AI Parameters**: Adjust temperature, max tokens, and other generation parameters
 
-## License
+## Development Guide
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+### Project Structure
+
+```
+project-ollama/
+├── ollama_jupyter_ai/           # Main Python package
+│   ├── __init__.py              # Package initialization and extension path registration
+│   └── labextension/            # JupyterLab extension directory
+│       ├── src/                 # TypeScript source code
+│       │   ├── components/      # React components
+│       │   │   └── AIAssistantPanel.tsx  # Main chat interface component
+│       │   │   └── Icons.tsx    # FontAwesome icon components
+│       │   ├── services/        # Service modules
+│       │   │   ├── OllamaService.ts      # Ollama API integration
+│       │   │   └── NotebookService.ts    # Notebook manipulation service
+│       │   ├── types/           # TypeScript type definitions
+│       │   ├── index.ts         # Extension entry point
+│       │   └── widget.tsx       # JupyterLab widget implementation
+│       ├── style/               # CSS styling
+│       ├── package.json         # Node.js package configuration
+│       └── tsconfig.json        # TypeScript configuration
+├── setup.py                     # Python package setup script
+├── pyproject.toml               # Python build system configuration
+├── install.json                 # JupyterLab extension metadata
+└── README.md                    # This documentation file
+```
+
+### Development Tips
+
+1. **Clean Before Rebuilding**: Always clean before rebuilding to avoid stale files:
+```bash
+cd ollama_jupyter_ai/labextension
+yarn clean:all
+```
+
+2. **Check Directory Paths**: When making changes, verify all directory paths are consistent
+
+3. **Monitor Build Output**: Check build logs for any errors that might prevent proper installation
+
+4. **Browser Dev Tools**: Use browser developer tools to check for console errors
 
 ## Contributing
 
@@ -278,3 +231,7 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 3. Commit your changes (`git commit -m 'Add some amazing feature'`)
 4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.

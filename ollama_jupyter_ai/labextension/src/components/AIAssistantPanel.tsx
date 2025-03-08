@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { INotebookTracker } from '@jupyterlab/notebook';
 import { OllamaService } from '../services/OllamaService';
+// Other imports as needed throughout the file
 
 interface Message {
   role: 'user' | 'assistant';

@@ -37,7 +37,7 @@
     "build:lib": "tsc",
     "clean": "yarn clean:lib",
     "clean:lib": "rimraf lib tsconfig.tsbuildinfo",
-    "clean:labextension": "rimraf ollama_jupyter_ai/labextension",
+    "clean:labextension": "rimraf ollama_jupyter_ai/static",
     "clean:all": "yarn clean:lib && yarn clean:labextension",
     "install:extension": "yarn build",
     "watch": "run-p watch:src watch:labextension",
@@ -45,14 +45,16 @@
     "watch:labextension": "jupyter labextension watch ."
   },
   "dependencies": {
+    "@fortawesome/fontawesome-svg-core": "^6.7.2",
+    "@fortawesome/free-solid-svg-icons": "^6.7.2",
+    "@fortawesome/react-fontawesome": "^0.2.2",
     "@jupyterlab/application": "^4.0.0",
     "@jupyterlab/apputils": "^4.0.0",
     "@jupyterlab/notebook": "^4.0.0",
-    "@jupyterlab/services": "^7.3.5",
+    "@jupyterlab/services": "^7.0.0",
     "@jupyterlab/ui-components": "^4.0.0",
     "@lumino/widgets": "^2.0.0",
     "axios": "^1.6.7",
-    "lucide-react": "^0.294.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   },
@@ -72,6 +74,6 @@
   },
   "jupyterlab": {
     "extension": true,
-    "outputDir": "ollama_jupyter_ai/labextension"
+    "outputDir": "ollama_jupyter_ai/static"
   }
 }

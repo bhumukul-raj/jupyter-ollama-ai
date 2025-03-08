@@ -1,0 +1,8 @@
+include LICENSE
+include README.md
+include install.json
+include pyproject.toml
+
+graft ollama_jupyter_ai/static
+
+global-exclude *.py[cod] __pycache__ *.so *.dylib
