@@ -109,6 +109,39 @@ jupyter labextension list
 jupyter lab
 ```
 
+### Complete Reinstallation (if extension still doesn't appear)
+
+If the extension still doesn't register properly, perform these cleaning and reinstallation steps:
+
+1. Clean all existing builds and installations:
+```bash
+jupyter lab clean
+rm -rf ollama_jupyter_ai/static/*
+pip uninstall ollama-jupyter-ai -y
+```
+
+2. Reinstall the package:
+```bash
+pip install -e .
+```
+
+3. Rebuild JupyterLab with debug output:
+```bash
+jupyter lab build --debug
+```
+
+4. Verify the extension is installed correctly:
+```bash
+jupyter labextension list | grep ollama-jupyter-ai
+```
+
+5. Check the installation path contents:
+```bash
+ls $(jupyter lab path | grep 'Lab Extensions' | head -1)/ollama-jupyter-ai
+```
+
+6. If issues persist, check your browser console (F12) for JavaScript errors related to loading the extension.
+
 ## Troubleshooting
 
 ### Extension Not Appearing in JupyterLab

@@ -1,6 +1,6 @@
 {
   "name": "ollama-jupyter-ai",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "AI-powered JupyterLab extension using Ollama for local LLM integration",
   "keywords": [
     "jupyter",
@@ -10,39 +10,41 @@
     "ai",
     "assistant"
   ],
-  "homepage": "https://github.com/yourusername/ollama-jupyter-ai",
+  "homepage": "https://github.com/bhumukul-raj/ollama-ai-assistant-project",
   "bugs": {
-    "url": "https://github.com/yourusername/ollama-jupyter-ai/issues"
+    "url": "https://github.com/bhumukul-raj/ollama-ai-assistant-project/issues"
   },
   "license": "MIT",
   "author": {
-    "name": "Your Name"
+    "name": "Bhumukul Raj"
   },
   "files": [
     "lib/**/*.{d.ts,eot,gif,html,jpg,js,js.map,json,png,svg,woff2,ttf}",
-    "style/**/*.{css,js,eot,gif,html,jpg,json,png,svg,woff2,ttf}"
+    "style/**/*.{css,js,eot,gif,html,jpg,json,png,svg,woff2,ttf}",
+    "src/install.json"
   ],
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "style": "style/index.css",
   "repository": {
     "type": "git",
-    "url": "https://github.com/yourusername/ollama-jupyter-ai.git"
+    "url": "https://github.com/bhumukul-raj/ollama-ai-assistant-project.git"
   },
   "scripts": {
     "build": "yarn run clean && yarn run build:lib && yarn run build:labextension:dev",
-    "build:prod": "yarn run clean && yarn run build:lib && yarn run build:labextension",
+    "build:prod": "yarn run clean && yarn run build:lib && yarn run build:labextension && yarn run postbuild",
     "build:labextension": "jupyter labextension build .",
     "build:labextension:dev": "jupyter labextension build --development True .",
     "build:lib": "tsc",
     "clean": "yarn run clean:lib",
     "clean:lib": "rimraf lib tsconfig.tsbuildinfo",
-    "clean:labextension": "rimraf dist",
+    "clean:labextension": "rimraf ../static",
     "clean:all": "yarn run clean:lib && yarn run clean:labextension",
     "install:extension": "yarn run build",
     "watch": "run-p watch:src watch:labextension",
     "watch:src": "tsc -w",
-    "watch:labextension": "jupyter labextension watch ."
+    "watch:labextension": "jupyter labextension watch .",
+    "postbuild": "mkdir -p ../static/static && cp src/install.json ../static/ && cp ../static/install.json ../static/static/"
   },
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^6.7.2",
@@ -58,8 +60,8 @@
   },
   "devDependencies": {
     "@jupyterlab/builder": "^4.3.5",
-    "@types/node": "^22.13.9",
-    "@types/react": "^19.0.10",
+    "@types/node": "^20.0.0",
+    "@types/react": "^18.2.43",
     "@types/react-dom": "^18.2.17",
     "@typescript-eslint/eslint-plugin": "^6.14.0",
     "@typescript-eslint/parser": "^6.14.0",

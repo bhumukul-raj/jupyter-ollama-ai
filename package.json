@@ -10,13 +10,13 @@
     "ai",
     "assistant"
   ],
-  "homepage": "https://github.com/yourusername/ollama-jupyter-ai",
+  "homepage": "https://github.com/bhumukul-raj/ollama-ai-assistant-project",
   "bugs": {
-    "url": "https://github.com/yourusername/ollama-jupyter-ai/issues"
+    "url": "https://github.com/bhumukul-raj/ollama-ai-assistant-project/issues"
   },
   "license": "MIT",
   "author": {
-    "name": "Your Name"
+    "name": "Bhumukul Raj"
   },
   "files": [
     "lib/**/*.{d.ts,eot,gif,html,jpg,js,js.map,json,png,svg,woff2,ttf}",
@@ -27,7 +27,7 @@
   "style": "style/index.css",
   "repository": {
     "type": "git",
-    "url": "https://github.com/yourusername/ollama-jupyter-ai.git"
+    "url": "https://github.com/bhumukul-raj/ollama-ai-assistant-project.git"
   },
   "scripts": {
     "build": "yarn build:lib && yarn build:labextension:dev",

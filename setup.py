@@ -34,66 +34,48 @@ package_data_spec = {
 
 # Files to be included in the Python package distribution
 data_files_spec = [
-    ("share/jupyter/labextensions/ollama-jupyter-ai", lab_path, "**"),
+    ("share/jupyter/labextensions/ollama-jupyter-ai", os.path.join(HERE, name, "static"), "**/*"),
     ("share/jupyter/labextensions/ollama-jupyter-ai", HERE, "install.json"),
 ]
 
-# Create a custom post-build hook to fix the nested static directory issue
-def post_build_hook(build_cmd, path, build_dir):
-    print(f"Running post-build hook for {path} -> {build_dir}")
+# Post build hook to ensure install.json is properly copied
+def post_build_hook(build_dir, prefix):
+    # Ensure install.json exists in the static directory
+    install_json_content = {
+        "packageName": "ollama-jupyter-ai",
+        "packageManager": "python",
+        "uninstallInstructions": "Use your Python package manager (pip) to uninstall the package.",
+        "extension": "./static/remoteEntry.js"
+    }
     
-    # First run the normal build
-    npm_builder(build_cmd=build_cmd, path=path, build_dir=build_dir)()
+    # Create install.json in the static directory
+    static_dir = os.path.join(HERE, name, "static")
+    static_static_dir = os.path.join(static_dir, "static")
     
-    # Check if we have the nested static directory issue
-    static_dir = os.path.join(build_dir, "static")
-    if os.path.exists(static_dir) and os.path.isdir(static_dir):
-        print("Fixing nested static directory structure...")
-        # Create a temporary directory
-        tmp_dir = os.path.join(HERE, "tmp_static")
-        os.makedirs(tmp_dir, exist_ok=True)
-        
-        # Move all files from static/ to the tmp directory
-        for item in os.listdir(static_dir):
-            src = os.path.join(static_dir, item)
-            dst = os.path.join(tmp_dir, item)
-            shutil.move(src, dst)
-            
-        # Remove all files from the build_dir except package.json
-        for item in os.listdir(build_dir):
-            if item != "package.json":
-                path = os.path.join(build_dir, item)
-                if os.path.isdir(path):
-                    shutil.rmtree(path)
-                else:
-                    os.remove(path)
-        
-        # Move all files from tmp_dir back to build_dir
-        for item in os.listdir(tmp_dir):
-            src = os.path.join(tmp_dir, item)
-            dst = os.path.join(build_dir, item)
-            shutil.move(src, dst)
-            
-        # Remove the temporary directory
-        shutil.rmtree(tmp_dir)
-        print("Directory structure fixed.")
-        
-    # Copy install.json to the build directory if it doesn't exist
-    install_json_path = os.path.join(build_dir, "install.json")
-    if not os.path.exists(install_json_path):
-        src_install_json = os.path.join(HERE, "install.json")
-        if os.path.exists(src_install_json):
-            shutil.copy(src_install_json, install_json_path)
-            print(f"Copied install.json to {build_dir}")
+    # Make sure the directories exist
+    os.makedirs(static_dir, exist_ok=True)
+    os.makedirs(static_static_dir, exist_ok=True)
     
-    # Print the contents of the build directory for debugging
-    print(f"Build directory contents after post-build hook:")
-    for item in os.listdir(build_dir):
-        print(f"  - {item}")
+    # Find the actual remoteEntry.js file
+    import glob
+    remote_entry_files = glob.glob(os.path.join(static_static_dir, "remoteEntry.*.js"))
+    if remote_entry_files:
+        # Update the extension path with the actual filename
+        remote_entry_file = os.path.basename(remote_entry_files[0])
+        install_json_content["extension"] = f"./static/{remote_entry_file}"
+    
+    # Write install.json to static directory
+    with open(os.path.join(static_dir, "install.json"), "w") as f:
+        json.dump(install_json_content, f, indent=2)
+    
+    # Copy install.json to static/static directory
+    shutil.copy(os.path.join(static_dir, "install.json"), os.path.join(static_static_dir, "install.json"))
+    
+    print(f"Created install.json in {static_dir} and {static_static_dir}")
 
-# Create a custom builder function that applies our post-build hook
-custom_builder = lambda: post_build_hook(
-    build_cmd="build:prod", 
+# Create a standard npm builder that directly builds to the static directory
+custom_builder = npm_builder(
+    build_cmd="build:prod",
     path=os.path.join(HERE, name, "labextension"),
     build_dir=os.path.join(HERE, name, "static")
 )
@@ -106,6 +88,8 @@ cmdclass.update(
     wrap_installers(
         pre_develop=custom_builder,
         pre_dist=custom_builder,
+        post_develop=post_build_hook,
+        post_dist=post_build_hook,
         ensured_targets=[
             os.path.join(lab_path, "package.json"),
             os.path.join(lab_path, "remoteEntry.*.js"),
@@ -148,10 +132,7 @@ setup_args = dict(
         "Framework :: Jupyter :: JupyterLab :: 4",
         "Framework :: Jupyter :: JupyterLab :: Extensions",
         "Framework :: Jupyter :: JupyterLab :: Extensions :: Prebuilt",
-    ],
-    entry_points={
-        "jupyterlab.extensions": ["ollama-jupyter-ai = ollama_jupyter_ai"]
-    }
+    ]
 )
 
 if __name__ == "__main__":
