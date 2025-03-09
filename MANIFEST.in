@@ -3,6 +3,17 @@ include README.md
 include install.json
 include pyproject.toml
 
-graft ollama_jupyter_ai/static
+# Include all files in the static directory
+include ollama_jupyter_ai/static/*
+include ollama_jupyter_ai/static/remoteEntry*.js
+include ollama_jupyter_ai/static/package.json
+include ollama_jupyter_ai/static/*.js
+include ollama_jupyter_ai/static/*.css
 
+# Include all files in the labextension directory
+recursive-include ollama_jupyter_ai/labextension *
+recursive-include ollama_jupyter_ai/labextension/lib *
+recursive-include ollama_jupyter_ai/labextension/style *
+
+# Exclude unnecessary files
 global-exclude *.py[cod] __pycache__ *.so *.dylib

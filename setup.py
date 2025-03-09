@@ -34,50 +34,49 @@ package_data_spec = {
 
 # Files to be included in the Python package distribution
 data_files_spec = [
-    ("share/jupyter/labextensions/ollama-jupyter-ai", os.path.join(HERE, name, "static"), "**/*"),
+    ("share/jupyter/labextensions/ollama-jupyter-ai", lab_path, "**/*"),
     ("share/jupyter/labextensions/ollama-jupyter-ai", HERE, "install.json"),
 ]
 
-# Post build hook to ensure install.json is properly copied
-def post_build_hook(build_dir, prefix):
-    # Ensure install.json exists in the static directory
-    install_json_content = {
-        "packageName": "ollama-jupyter-ai",
-        "packageManager": "python",
-        "uninstallInstructions": "Use your Python package manager (pip) to uninstall the package.",
-        "extension": "./static/remoteEntry.js"
-    }
-    
-    # Create install.json in the static directory
+def post_build_hook():
+    """
+    Post-build hook to ensure all necessary files are in the correct location
+    """
+    # Ensure the static directory exists
     static_dir = os.path.join(HERE, name, "static")
-    static_static_dir = os.path.join(static_dir, "static")
-    
-    # Make sure the directories exist
     os.makedirs(static_dir, exist_ok=True)
-    os.makedirs(static_static_dir, exist_ok=True)
     
-    # Find the actual remoteEntry.js file
-    import glob
-    remote_entry_files = glob.glob(os.path.join(static_static_dir, "remoteEntry.*.js"))
-    if remote_entry_files:
-        # Update the extension path with the actual filename
-        remote_entry_file = os.path.basename(remote_entry_files[0])
-        install_json_content["extension"] = f"./static/{remote_entry_file}"
+    # Copy install.json from the project root to static directory
+    src_install_json = os.path.join(HERE, "install.json")
+    dest_install_json = os.path.join(static_dir, "install.json")
     
-    # Write install.json to static directory
-    with open(os.path.join(static_dir, "install.json"), "w") as f:
-        json.dump(install_json_content, f, indent=2)
+    if os.path.exists(src_install_json):
+        shutil.copy(src_install_json, dest_install_json)
+        print(f"Copied install.json to {dest_install_json}")
+    else:
+        print(f"Warning: Source install.json at {src_install_json} does not exist")
     
-    # Copy install.json to static/static directory
-    shutil.copy(os.path.join(static_dir, "install.json"), os.path.join(static_static_dir, "install.json"))
+    # Check if the build files were properly created
+    if not os.path.exists(os.path.join(static_dir, "remoteEntry.js")):
+        # Look for any remoteEntry*.js files in the static directory
+        remote_entries = [f for f in os.listdir(static_dir) 
+                         if f.startswith("remoteEntry") and f.endswith(".js")]
+        
+        if remote_entries:
+            # If we find a remote entry file with a hash, create a symlink or copy it
+            src_remote_entry = os.path.join(static_dir, remote_entries[0])
+            dest_remote_entry = os.path.join(static_dir, "remoteEntry.js")
+            shutil.copy(src_remote_entry, dest_remote_entry)
+            print(f"Copied {src_remote_entry} to {dest_remote_entry}")
     
-    print(f"Created install.json in {static_dir} and {static_static_dir}")
+    print(f"Static directory contents: {os.listdir(static_dir)}")
 
 # Create a standard npm builder that directly builds to the static directory
 custom_builder = npm_builder(
     build_cmd="build:prod",
     path=os.path.join(HERE, name, "labextension"),
-    build_dir=os.path.join(HERE, name, "static")
+    build_dir=os.path.join(HERE, name, "static"),
+    source_dir=os.path.join(HERE, name, "labextension", "src")
 )
 
 cmdclass = {}

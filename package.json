@@ -19,30 +19,31 @@
     "name": "Bhumukul Raj"
   },
   "files": [
-    "lib/**/*.{d.ts,eot,gif,html,jpg,js,js.map,json,png,svg,woff2,ttf}",
-    "style/**/*.{css,js,eot,gif,html,jpg,json,png,svg,woff2,ttf}"
+    "ollama_jupyter_ai/labextension/lib/**/*.{d.ts,eot,gif,html,jpg,js,js.map,json,png,svg,woff2,ttf}",
+    "ollama_jupyter_ai/labextension/style/**/*.{css,js,eot,gif,html,jpg,json,png,svg,woff2,ttf}"
   ],
-  "main": "lib/index.js",
-  "types": "lib/index.d.ts",
-  "style": "style/index.css",
+  "main": "ollama_jupyter_ai/labextension/lib/index.js",
+  "types": "ollama_jupyter_ai/labextension/lib/index.d.ts",
+  "style": "ollama_jupyter_ai/labextension/style/index.css",
   "repository": {
     "type": "git",
     "url": "https://github.com/bhumukul-raj/ollama-ai-assistant-project.git"
   },
   "scripts": {
     "build": "yarn build:lib && yarn build:labextension:dev",
-    "build:prod": "yarn clean && yarn build:lib && yarn build:labextension",
+    "build:prod": "yarn clean && yarn build:lib && yarn build:labextension && yarn run postbuild",
     "build:labextension": "jupyter labextension build .",
     "build:labextension:dev": "jupyter labextension build --development True .",
-    "build:lib": "tsc",
+    "build:lib": "tsc -p ollama_jupyter_ai/labextension/tsconfig.json",
     "clean": "yarn clean:lib",
-    "clean:lib": "rimraf lib tsconfig.tsbuildinfo",
+    "clean:lib": "yarn rimraf ollama_jupyter_ai/labextension/lib ollama_jupyter_ai/labextension/tsconfig.tsbuildinfo",
     "clean:labextension": "rimraf ollama_jupyter_ai/static",
     "clean:all": "yarn clean:lib && yarn clean:labextension",
     "install:extension": "yarn build",
     "watch": "run-p watch:src watch:labextension",
-    "watch:src": "tsc -w",
-    "watch:labextension": "jupyter labextension watch ."
+    "watch:src": "tsc -w -p ollama_jupyter_ai/labextension/tsconfig.json",
+    "watch:labextension": "jupyter labextension watch .",
+    "postbuild": "mkdir -p ollama_jupyter_ai/static && cp -f ./install.json ollama_jupyter_ai/static/"
   },
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^6.7.2",
@@ -66,7 +67,7 @@
     "@typescript-eslint/eslint-plugin": "^6.14.0",
     "@typescript-eslint/parser": "^6.14.0",
     "npm-run-all": "^4.1.5",
-    "rimraf": "^5.0.0",
+    "rimraf": "^6.0.1",
     "typescript": "^5.2.2"
   },
   "publishConfig": {
@@ -74,6 +75,16 @@
   },
   "jupyterlab": {
     "extension": true,
-    "outputDir": "ollama_jupyter_ai/static"
+    "outputDir": "ollama_jupyter_ai/static",
+    "sharedPackages": {
+      "react": {
+        "bundled": false,
+        "singleton": true
+      },
+      "react-dom": {
+        "bundled": false,
+        "singleton": true
+      }
+    }
   }
 }

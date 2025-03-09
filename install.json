@@ -1,12 +1,6 @@
 {
-  "packageManager": "python",
   "packageName": "ollama_jupyter_ai",
+  "packageManager": "python",
   "uninstallInstructions": "Use your Python package manager (pip) to uninstall the package.",
-  "extensions": [
-    {
-      "name": "ollama-jupyter-ai",
-      "description": "AI-powered JupyterLab extension using Ollama for local LLM integration",
-      "path": "ollama_jupyter_ai/static"
-    }
-  ]
-} 
+  "extension": "ollama-jupyter-ai"
+}

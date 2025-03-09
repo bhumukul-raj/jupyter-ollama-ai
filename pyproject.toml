@@ -3,8 +3,8 @@ requires = ["jupyter_packaging~=0.12.0", "jupyterlab~=4.0"]
 build-backend = "jupyter_packaging.build_api"
 
 [tool.jupyter-packaging.options]
-skip-if-exists = ["ollama_jupyter_ai/labextension/static/style.js"]
-ensured-targets = ["ollama_jupyter_ai/labextension/static/style.js"]
+skip-if-exists = ["ollama_jupyter_ai/static/remoteEntry.js"]
+ensured-targets = ["ollama_jupyter_ai/static/remoteEntry.js", "ollama_jupyter_ai/static/package.json"]
 
 [tool.jupyter-packaging.builder]
 factory = "jupyter_packaging.npm_builder"
@@ -12,6 +12,13 @@ factory = "jupyter_packaging.npm_builder"
 [tool.jupyter-packaging.build-args]
 build_cmd = "build:prod"
 npm = ["jlpm"]
+
+# Add data-files section for labextension installation
+[tool.jupyter-packaging.data-files]
+"share/jupyter/labextensions/ollama-jupyter-ai" = [
+    "ollama_jupyter_ai/static/**/*",
+    "install.json"
+]
 
 [tool.check-manifest]
 ignore = ["ollama_jupyter_ai/labextension/**", "yarn.lock", ".*", "package-lock.json"] 

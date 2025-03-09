@@ -39,15 +39,27 @@ def _jupyter_labextension_paths():
     """
     logger.debug("Loading extension paths for ollama-jupyter-ai")
     
-    # Verify the static directory exists
-    static_dir = osp.join(HERE, "static")
+    # Check if the static directory exists
+    static_dir = osp.join(HERE, 'static')
     if not osp.exists(static_dir):
-        logger.warning(f"Static directory not found at {static_dir}")
-    else:
-        logger.debug(f"Found static directory at {static_dir}")
-        logger.debug(f"Static directory contents: {os.listdir(static_dir)}")
+        logger.warning(f"Static directory not found: {static_dir}")
+        # Let's check if we have files inside the directory
+        try:
+            os.makedirs(static_dir, exist_ok=True)
+            logger.debug(f"Created static directory: {static_dir}")
+        except Exception as e:
+            logger.error(f"Error creating static directory: {e}")
+    
+    # Check what files are in the static directory
+    if osp.exists(static_dir):
+        try:
+            files = os.listdir(static_dir)
+            logger.debug(f"Files in static directory: {files}")
+        except Exception as e:
+            logger.error(f"Error listing files in static directory: {e}")
+            files = []
     
     return [{
         'src': 'static',
-        'dest': 'ollama-jupyter-ai',
+        'dest': 'ollama-jupyter-ai'
     }] 
