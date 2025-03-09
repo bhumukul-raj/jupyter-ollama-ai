@@ -2,13 +2,19 @@ include LICENSE
 include README.md
 include install.json
 include pyproject.toml
+include setup.py
 
-# Include all files in the static directory
-include ollama_jupyter_ai/static/*
-include ollama_jupyter_ai/static/remoteEntry*.js
+# Include all files in the static directory with proper patterns
+graft ollama_jupyter_ai/static
+recursive-include ollama_jupyter_ai/static *
 include ollama_jupyter_ai/static/package.json
-include ollama_jupyter_ai/static/*.js
-include ollama_jupyter_ai/static/*.css
+include ollama_jupyter_ai/static/install.json
+
+# Include files from the nested static/static directory
+recursive-include ollama_jupyter_ai/static/static *
+include ollama_jupyter_ai/static/static/remoteEntry*.js
+include ollama_jupyter_ai/static/static/*.js
+include ollama_jupyter_ai/static/static/*.css
 
 # Include all files in the labextension directory
 recursive-include ollama_jupyter_ai/labextension *

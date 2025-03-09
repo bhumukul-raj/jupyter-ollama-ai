@@ -8,7 +8,7 @@ ollama_jupyter_ai.egg-info/
 # Node/TypeScript build artifacts
 node_modules/
 ollama_jupyter_ai/static/
-lib/
+ollama_jupyter_ai/labextension/lib/
 tsconfig.tsbuildinfo
 .yarn/
 # Development

@@ -15,47 +15,60 @@ A powerful AI-powered assistant extension for JupyterLab that uses Ollama for lo
 ## Prerequisites
 
 - JupyterLab >= 4.0.0
-- Node.js >= 18.0.0
 - Python >= 3.8
 - Ollama (for local AI processing)
-- jupyter_packaging (for extension installation)
 
 ## Installation
 
-### Using pip (for end users)
+### Installing from PyPI (Recommended)
 
-1. Install jupyter_packaging first (required for building the extension):
 ```bash
-pip install jupyter_packaging
-```
-
-2. Install the extension:
-```bash
+# Install the extension
 pip install ollama-jupyter-ai
+
+# Start JupyterLab
+jupyter lab
 ```
 
-3. Install and start Ollama:
+### Installing from TestPyPI
+
+If you want to try the latest development version:
+
+```bash
+pip install -i https://test.pypi.org/simple/ ollama-jupyter-ai
+jupyter lab
+```
+
+### Setting up Ollama
+
+After installing the extension, you need to install and start Ollama:
+
 ```bash
 # Install Ollama (visit https://ollama.ai for installation instructions)
 # Pull a compatible model (like mistral)
 ollama pull mistral
+
 # Start the Ollama service
 ollama serve
 ```
 
-4. Restart JupyterLab:
+### Installing from GitHub
+
+You can also install directly from the GitHub repository:
+
 ```bash
+pip install git+https://github.com/bhumukul-raj/ollama-ai-assistant-project.git
 jupyter lab
 ```
 
-### Manual Installation (if pip install doesn't work)
+### Developer Installation
 
-If the standard installation doesn't register the extension properly, follow these steps:
+If you want to develop or modify the extension:
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/yourusername/ollama-jupyter-ai.git
-cd ollama-jupyter-ai
+git clone https://github.com/bhumukul-raj/ollama-ai-assistant-project.git
+cd ollama-ai-assistant-project
 ```
 
 2. Create and activate a virtual environment:
@@ -64,83 +77,116 @@ python -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
 ```
 
-3. Install required dependencies:
-```bash
-pip install jupyter_packaging jupyterlab>=4.0.0
-```
-
-4. Install the package in development mode:
+3. Install in development mode:
 ```bash
 pip install -e .
-```
-
-5. Build the extension:
-```bash
-cd ollama_jupyter_ai/labextension
-yarn install
-yarn build:prod
-cd ../..
-```
-
-6. Run the post-build hook manually to ensure proper file structure:
-```bash
-python -c "from setup import post_build_hook; post_build_hook(build_cmd='build:prod', path='./ollama_jupyter_ai/labextension', build_dir='./ollama_jupyter_ai/static')"
-```
-
-7. Manually copy the extension files to the JupyterLab extensions directory:
-```bash
-mkdir -p venv/share/jupyter/labextensions/ollama-jupyter-ai
-cp -r ollama_jupyter_ai/static/* venv/share/jupyter/labextensions/ollama-jupyter-ai/
-```
-
-8. Rebuild JupyterLab:
-```bash
+jupyter labextension develop --overwrite .
 jupyter lab build
 ```
 
-9. Verify the extension is installed:
-```bash
-jupyter labextension list
-# Should show "ollama-jupyter-ai" in the list
-```
-
-10. Start JupyterLab:
+4. Run JupyterLab:
 ```bash
 jupyter lab
 ```
 
-### Complete Reinstallation (if extension still doesn't appear)
+## Complete Development Environment Setup
 
-If the extension still doesn't register properly, perform these cleaning and reinstallation steps:
+If you're setting up a development environment from scratch, follow these detailed steps:
 
-1. Clean all existing builds and installations:
+### Required Python Packages
+
+The following Python packages are required for development:
+
+- **jupyter_packaging**: Handles packaging of Jupyter extensions
+- **jupyterlab**: The JupyterLab framework (version 4.0.0 or later)
+- Other dependencies will be installed automatically
+
+### Required Node.js Packages
+
+The extension uses several Node.js packages that are specified in the `package.json` file:
+
+- **React and React DOM**: For the UI components
+- **@jupyterlab** packages: For integrating with JupyterLab
+- **@fortawesome**: For icons
+- **axios**: For API requests to Ollama
+- **Development tools**: TypeScript, ESLint, etc.
+
+### Complete Setup Process
+
+1. **System Prerequisites**:
+   - Python 3.8 or later
+   - Node.js 18 or later
+   - npm or yarn
+
+2. **Clone the Repository**:
+   ```bash
+   git clone https://github.com/bhumukul-raj/ollama-ai-assistant-project.git
+   cd ollama-ai-assistant-project
+   ```
+
+3. **Create a Python Virtual Environment**:
+   ```bash
+   python -m venv venv
+   source venv/bin/activate  # On Windows: venv\Scripts\activate
+   ```
+
+4. **Install Python Dependencies**:
+   ```bash
+   pip install jupyter_packaging jupyterlab~=4.0.0
+   pip install -e .
+   ```
+
+5. **Install Node.js Dependencies**:
+   ```bash
+   yarn install
+   # OR
+   npm install
+   ```
+
+6. **Build the Extension**:
+   ```bash
+   # Clean any previous builds first
+   yarn clean:all  
+   # OR
+   npm run clean:all
+
+   # Build the extension
+   yarn build:prod
+   # OR
+   npm run build:prod
+   ```
+
+7. **Install the Extension in Development Mode**:
+   ```bash
+   jupyter labextension develop --overwrite .
+   jupyter lab build
+   ```
+
+8. **Verify Installation**:
+   ```bash
+   jupyter labextension list | grep ollama-jupyter-ai
+   ```
+
+9. **Start JupyterLab**:
+   ```bash
+   jupyter lab
+   ```
+
+### Rebuild After Changes
+
+When you make changes to the TypeScript code, you need to rebuild:
+
 ```bash
-jupyter lab clean
-rm -rf ollama_jupyter_ai/static/*
+# For changes to TypeScript files
+yarn build:prod  # or npm run build:prod
+jupyter lab build
+
+# For complete rebuild (recommended if you have issues)
+yarn clean:all && yarn build:prod  # or npm run clean:all && npm run build:prod
 pip uninstall ollama-jupyter-ai -y
-```
-
-2. Reinstall the package:
-```bash
 pip install -e .
+jupyter lab clean && jupyter lab build
 ```
-
-3. Rebuild JupyterLab with debug output:
-```bash
-jupyter lab build --debug
-```
-
-4. Verify the extension is installed correctly:
-```bash
-jupyter labextension list | grep ollama-jupyter-ai
-```
-
-5. Check the installation path contents:
-```bash
-ls $(jupyter lab path | grep 'Lab Extensions' | head -1)/ollama-jupyter-ai
-```
-
-6. If issues persist, check your browser console (F12) for JavaScript errors related to loading the extension.
 
 ## Troubleshooting
 
@@ -259,6 +305,31 @@ yarn clean:all
 3. **Monitor Build Output**: Check build logs for any errors that might prevent proper installation
 
 4. **Browser Dev Tools**: Use browser developer tools to check for console errors
+
+5. **Useful Development Commands**:
+
+```bash
+# Install rimraf for better cleanup (if not already in devDependencies)
+yarn add rimraf --dev
+
+# Clean all build artifacts and build production version
+yarn clean:all && yarn build:prod
+
+# Uninstall the extension package completely
+pip uninstall ollama-jupyter-ai -y
+
+# Reinstall in development mode
+pip install -e .
+
+# Clean JupyterLab and rebuild
+jupyter lab clean && jupyter lab build
+
+# Check installed extensions
+jupyter labextension list
+
+# Run JupyterLab in debug mode
+jupyter lab --debug
+```
 
 ## Contributing
 

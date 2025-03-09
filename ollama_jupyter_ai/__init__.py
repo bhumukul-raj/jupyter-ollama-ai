@@ -59,7 +59,8 @@ def _jupyter_labextension_paths():
             logger.error(f"Error listing files in static directory: {e}")
             files = []
     
+    # This is the critical path information that JupyterLab uses to find your extension
     return [{
-        'src': 'static',
-        'dest': 'ollama-jupyter-ai'
+        'src': 'static',  # Source directory relative to the ollama_jupyter_ai package
+        'dest': 'ollama-jupyter-ai'  # Extension name as defined in package.json's name field
     }] 
