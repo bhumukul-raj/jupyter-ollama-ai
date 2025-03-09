@@ -1,0 +1,10 @@
+{
+  "json.schemaDownload.enable": true,
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "json.schemas": [
+    {
+      "fileMatch": ["**/tsconfig.json"],
+      "url": "./ollama_jupyter_ai/labextension/schemas/tsconfig.schema.json"
+    }
+  ]
+} 

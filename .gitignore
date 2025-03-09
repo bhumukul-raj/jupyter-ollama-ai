@@ -13,7 +13,6 @@ tsconfig.tsbuildinfo
 .yarn/
 # Development
 .ipynb_checkpoints
-.vscode/
 .DS_Store
 
 # Local Ollama

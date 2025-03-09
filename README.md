@@ -12,6 +12,48 @@ A powerful AI-powered assistant extension for JupyterLab that uses Ollama for lo
 - **Modern, Responsive UI**: Clean interface that works well with JupyterLab's design
 - **Dark/Light Theme Support**: Adapts to your JupyterLab theme preferences
 
+## New Features in Version 1.1.0
+
+### Architecture Improvements
+- **Modular Component Architecture**: Completely refactored the codebase using modern React patterns
+- **Structured State Management**: Added context-based state management for better data flow
+- **Custom Hooks**: Dedicated hooks for API interactions and notebook operations
+- **Code Organization**: Split code into smaller, focused components for better maintainability
+
+### Enhanced AI Capabilities
+- **Token-by-Token Streaming**: More natural streaming response generation
+- **Improved Caching**: Advanced caching system with persistent storage between sessions
+- **Better Error Handling**: More robust error recovery with detailed error messages
+- **Typing Indicators**: Visual indicators when the AI is generating a response
+
+### Session Management
+- **Save & Load Conversations**: Save conversations and load them later
+- **Export & Import**: Export conversations as JSON, Markdown, or Jupyter notebooks
+- **History Management**: Browse and manage previous conversations
+
+### Notebook Integration
+- **Enhanced Cell Analysis**: More detailed code analysis with suggestions
+- **Code Execution**: Run generated code directly from the assistant
+- **Cell Management**: Create new cells with assistant-generated code
+
+### UI/UX Improvements
+- **Accessibility Enhancements**: Better keyboard navigation, screen reader support
+- **High Contrast Mode**: Improved readability for users with visual impairments
+- **Expanded Input Area**: Resizable input area for longer prompts
+- **Keyboard Shortcuts**: Added keyboard shortcuts for common actions
+- **Tooltips**: Added helpful tooltips throughout the interface
+
+### Performance Optimizations
+- **LRU Cache**: Least-Recently-Used cache eviction policy
+- **Persistent Cache**: Cache is preserved between sessions using local storage
+- **Lazy Loading**: Components and resources are loaded only when needed
+- **Memory Management**: Better handling of large response histories
+
+### Configuration
+- **User Preferences**: Customizable settings for appearance and behavior
+- **Model Selection**: Easily switch between different Ollama models
+- **Theme Support**: Follows JupyterLab theme settings
+
 ## Prerequisites
 
 - JupyterLab >= 4.0.0

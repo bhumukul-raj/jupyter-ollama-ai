@@ -12,10 +12,13 @@ export class AIAssistantWidget extends ReactWidget {
   constructor(notebooks: INotebookTracker) {
     super();
     this.notebooks = notebooks;
-    this.addClass('jp-AIAssistant');
   }
 
   render(): JSX.Element {
-    return <AIAssistantPanel notebooks={this.notebooks} />;
+    return (
+      <div className="jp-AIAssistant-container">
+        <AIAssistantPanel notebooks={this.notebooks} />
+      </div>
+    );
   }
 } 

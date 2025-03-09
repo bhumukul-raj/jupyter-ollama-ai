@@ -24,153 +24,439 @@ interface CacheEntry {
 // Maximum size for notebook context
 const MAX_NOTEBOOK_CONTEXT_SIZE = 5000;
 
+// New persistent storage interface
+interface OllamaStorageService {
+  saveCache(key: string, value: CacheEntry): void;
+  getCache(key: string): CacheEntry | null;
+  getAllCacheKeys(): string[];
+  clearCache(): void;
+  isAvailable(): boolean;
+}
+
+// New service options interface
+interface OllamaServiceOptions {
+  baseUrl?: string;
+  defaultModel?: string;
+  cacheLifetime?: number;
+  maxCacheSize?: number;
+  persistCache?: boolean;
+  debugEnabled?: boolean;
+}
+
+// Implement a local storage-based persistent cache
+class LocalStorageCacheService implements OllamaStorageService {
+  private readonly prefix = 'ollama_cache_';
+  
+  constructor() {
+    this.cleanupExpiredEntries();
+  }
+  
+  public saveCache(key: string, value: CacheEntry): void {
+    try {
+      localStorage.setItem(this.prefix + key, JSON.stringify(value));
+    } catch (error) {
+      console.error('Failed to save cache to localStorage:', error);
+      this.pruneCache(); // Try to make space
+    }
+  }
+  
+  public getCache(key: string): CacheEntry | null {
+    try {
+      const cached = localStorage.getItem(this.prefix + key);
+      if (!cached) return null;
+      
+      const entry = JSON.parse(cached) as CacheEntry;
+      
+      // Check if entry has expired
+      if (entry.expiresAt < Date.now()) {
+        localStorage.removeItem(this.prefix + key);
+        return null;
+      }
+      
+      return entry;
+    } catch (error) {
+      console.error('Failed to retrieve cache from localStorage:', error);
+      return null;
+    }
+  }
+  
+  public getAllCacheKeys(): string[] {
+    const keys: string[] = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && key.startsWith(this.prefix)) {
+        keys.push(key.substring(this.prefix.length));
+      }
+    }
+    return keys;
+  }
+  
+  public clearCache(): void {
+    const keysToRemove: string[] = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && key.startsWith(this.prefix)) {
+        keysToRemove.push(key);
+      }
+    }
+    
+    keysToRemove.forEach(key => localStorage.removeItem(key));
+  }
+  
+  // Check if local storage is available
+  public isAvailable(): boolean {
+    try {
+      const testKey = '__ollama_test__';
+      localStorage.setItem(testKey, testKey);
+      localStorage.removeItem(testKey);
+      return true;
+    } catch (error) {
+      return false;
+    }
+  }
+  
+  // Remove expired entries to free up space
+  private cleanupExpiredEntries(): void {
+    const now = Date.now();
+    const keysToRemove: string[] = [];
+    
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && key.startsWith(this.prefix)) {
+        try {
+          const entry = JSON.parse(localStorage.getItem(key) || '{}') as CacheEntry;
+          if (entry.expiresAt < now) {
+            keysToRemove.push(key);
+          }
+        } catch (error) {
+          // Remove invalid entries
+          keysToRemove.push(key);
+        }
+      }
+    }
+    
+    keysToRemove.forEach(key => localStorage.removeItem(key));
+  }
+  
+  // Remove oldest entries when we're out of space
+  private pruneCache(): void {
+    try {
+      // Get all cache entries with timestamps
+      const entries: { key: string; timestamp: number }[] = [];
+      
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && key.startsWith(this.prefix)) {
+          try {
+            const entry = JSON.parse(localStorage.getItem(key) || '{}') as CacheEntry;
+            entries.push({ key, timestamp: entry.timestamp });
+          } catch (error) {
+            // Remove invalid entries
+            localStorage.removeItem(key);
+          }
+        }
+      }
+      
+      // Sort by timestamp (oldest first)
+      entries.sort((a, b) => a.timestamp - b.timestamp);
+      
+      // Remove oldest 20% of entries
+      const removeCount = Math.max(1, Math.ceil(entries.length * 0.2));
+      entries.slice(0, removeCount).forEach(entry => {
+        localStorage.removeItem(entry.key);
+      });
+    } catch (error) {
+      console.error('Error pruning cache:', error);
+    }
+  }
+}
+
+// Enhanced OllamaService class
 export class OllamaService {
   private baseUrl: string;
   private defaultModel: string;
   private debugEnabled: boolean = true;
   private responseCache: Map<string, CacheEntry> = new Map();
-  private cacheTTL: number = 1000 * 60 * 30; // 30 minutes cache lifetime
+  private cacheTTL: number = 1000 * 60 * 30; // 30 minutes cache lifetime by default
   private activeRequests: Map<string, AbortController> = new Map();
-
-  constructor(baseUrl: string = 'http://localhost:11434', defaultModel: string = 'mistral') {
-    this.baseUrl = baseUrl;
-    this.defaultModel = defaultModel;
-    this.log('OllamaService initialized with base URL:', baseUrl);
-    this.log('Default model set to:', defaultModel);
+  private storageService: OllamaStorageService | null = null;
+  private maxCacheSize: number;
+  private useTokenStreaming: boolean = true;
+  
+  constructor(baseUrl: string = 'http://localhost:11434', defaultModel: string = 'mistral', options?: OllamaServiceOptions) {
+    this.baseUrl = options?.baseUrl || baseUrl;
+    this.defaultModel = options?.defaultModel || defaultModel;
+    this.cacheTTL = options?.cacheLifetime || 1000 * 60 * 30;
+    this.maxCacheSize = options?.maxCacheSize || 100;
+    this.debugEnabled = options?.debugEnabled ?? true;
+    
+    // Initialize persistent storage if requested
+    if (options?.persistCache) {
+      const storageService = new LocalStorageCacheService();
+      if (storageService.isAvailable()) {
+        this.storageService = storageService;
+        this.log('Persistent cache enabled using localStorage');
+      } else {
+        this.log('Persistent cache requested but localStorage is not available');
+      }
+    }
+    
+    this.log('OllamaService initialized with base URL:', this.baseUrl);
+    this.log('Default model set to:', this.defaultModel);
   }
 
   /**
-   * Log messages to console
+   * A simple log method that conditionally logs based on debug setting
    */
   private log(...args: any[]): void {
-    if (!this.debugEnabled) return;
-    
-    // Log to console with timestamp
-    const timestamp = new Date().toISOString();
-    console.debug(`[${timestamp}] [OllamaService]`, ...args);
-  }
-
-  /**
-   * Fetch available models from Ollama
-   * @returns Array of available model names
-   */
-  async getAvailableModels(): Promise<string[]> {
-    try {
-      this.log('Fetching available models from Ollama API');
-      const response = await axios.get(`${this.baseUrl}/api/tags`);
-      this.log('Models response:', response.data);
-      
-      if (response.data && response.data.models) {
-        const models = response.data.models.map((model: OllamaModel) => model.name);
-        return models;
-      }
-      
-      return [];
-    } catch (error) {
-      this.log('Error fetching models from Ollama API:', error);
-      
-      // Try alternative endpoint
-      try {
-        this.log('Trying alternative endpoint for models');
-        const response = await axios.get(`${this.baseUrl}/api/models`);
-        this.log('Alternative models response:', response.data);
-        
-        if (response.data && Array.isArray(response.data.models)) {
-          return response.data.models.map((model: any) => model.name || model);
-        }
-        
-        return [];
-      } catch (altError) {
-        this.log('Error with alternative endpoint:', altError);
-        return [];
-      }
+    if (this.debugEnabled) {
+      // Use only essential logging; avoid excessive console output
+      console.log('[OllamaService]', ...args);
     }
   }
 
   /**
-   * Get the default model name
-   * @returns The default model name
+   * Get a list of available models from Ollama
+   */
+  async getAvailableModels(): Promise<string[]> {
+    try {
+      this.log('Fetching available models');
+      
+      const response = await axios.get<{ models: OllamaModel[] }>(`${this.baseUrl}/api/tags`);
+      const models = response.data.models.map(model => model.name);
+      
+      this.log('Found models:', models);
+      return models;
+    } catch (error) {
+      this.log('Error fetching models:', error);
+      
+      // Try to return a sensible default if we can't reach Ollama
+      if (axios.isAxiosError(error) && error.code === 'ECONNREFUSED') {
+        // Ollama might not be running
+        this.log('Ollama seems to be offline. Is it running?');
+        throw new Error('Could not connect to Ollama. Please make sure it is running on ' + this.baseUrl);
+      }
+      
+      return [];
+    }
+  }
+  
+  /**
+   * Get the default model
    */
   getDefaultModel(): string {
     return this.defaultModel;
   }
-
+  
   /**
-   * Generate a caching key from the request parameters
+   * Set the default model
+   */
+  setDefaultModel(model: string): void {
+    this.defaultModel = model;
+  }
+  
+  /**
+   * Generate a cache key from the prompt and model
    */
   private getCacheKey(prompt: string, model: string): string {
-    return `${model}:${prompt}`;
+    // Simple hashing function for the cache key
+    return `${model}_${this.hashString(prompt)}`;
   }
-
+  
   /**
-   * Check if a response is cached and still valid
+   * Hash a string to create a shorter key
+   */
+  private hashString(str: string): string {
+    let hash = 0;
+    if (str.length === 0) return hash.toString();
+    
+    for (let i = 0; i < str.length; i++) {
+      const char = str.charCodeAt(i);
+      hash = ((hash << 5) - hash) + char;
+      hash = hash & hash; // Convert to 32bit integer
+    }
+    
+    return hash.toString(16); // Convert to hex string
+  }
+  
+  /**
+   * Check if we have a cached response
    */
   private getCachedResponse(prompt: string, model: string): { response: string, fromCache: boolean } | null {
     const cacheKey = this.getCacheKey(prompt, model);
-    const cachedEntry = this.responseCache.get(cacheKey);
     
-    if (cachedEntry && Date.now() < cachedEntry.expiresAt) {
-      this.log('Cache hit for:', cacheKey);
-      console.log(`[OllamaService] CACHE HIT: Response found in cache (saved ${Date.now() - cachedEntry.timestamp}ms ago)`);
-      return { response: cachedEntry.response, fromCache: true };
+    // First check in-memory cache
+    const memoryCached = this.responseCache.get(cacheKey);
+    if (memoryCached) {
+      const now = Date.now();
+      if (memoryCached.expiresAt > now) {
+        this.log('Cache hit (memory):', cacheKey);
+        return { 
+          response: memoryCached.response + '__FROM_CACHE__', 
+          fromCache: true 
+        };
+      } else {
+        // Expired entry
+        this.responseCache.delete(cacheKey);
+      }
     }
     
-    // Clean up expired entry if found
-    if (cachedEntry) {
-      this.log('Cache expired for:', cacheKey);
-      this.responseCache.delete(cacheKey);
+    // Then check persistent storage if available
+    if (this.storageService) {
+      const storageCached = this.storageService.getCache(cacheKey);
+      if (storageCached) {
+        // Add to in-memory cache for faster access next time
+        this.responseCache.set(cacheKey, storageCached);
+        this.log('Cache hit (storage):', cacheKey);
+        return { 
+          response: storageCached.response + '__FROM_CACHE__', 
+          fromCache: true 
+        };
+      }
     }
     
-    console.log(`[OllamaService] CACHE MISS: Request will be sent to Ollama API`);
     return null;
   }
-
+  
   /**
-   * Cache a response
+   * Store a response in the cache
    */
   private cacheResponse(prompt: string, model: string, response: string): void {
     const cacheKey = this.getCacheKey(prompt, model);
-    this.responseCache.set(cacheKey, {
-      response,
-      timestamp: Date.now(),
-      expiresAt: Date.now() + this.cacheTTL
-    });
+    const now = Date.now();
     
-    // Cleanup cache if it gets too large (keep the most recent 50 entries)
-    if (this.responseCache.size > 50) {
-      const keys = Array.from(this.responseCache.keys());
-      const oldestKeys = keys.slice(0, keys.length - 50);
-      for (const key of oldestKeys) {
-        this.responseCache.delete(key);
-      }
+    const cacheEntry: CacheEntry = {
+      response,
+      timestamp: now,
+      expiresAt: now + this.cacheTTL
+    };
+    
+    // Add to in-memory cache
+    this.responseCache.set(cacheKey, cacheEntry);
+    
+    // Add to persistent storage if available
+    if (this.storageService) {
+      this.storageService.saveCache(cacheKey, cacheEntry);
     }
+    
+    // Ensure cache doesn't grow too large
+    this.enforceMemoryCacheLimit();
+    
+    this.log('Cached response for:', cacheKey);
+  }
+  
+  /**
+   * Limit the in-memory cache size by removing oldest entries
+   */
+  private enforceMemoryCacheLimit(): void {
+    if (this.responseCache.size <= this.maxCacheSize) return;
+    
+    // Sort entries by timestamp (oldest first)
+    const entries = Array.from(this.responseCache.entries())
+      .sort((a, b) => a[1].timestamp - b[1].timestamp);
+    
+    // Remove oldest entries until we're under the limit
+    const entriesToRemove = entries.slice(0, entries.length - this.maxCacheSize);
+    for (const [key] of entriesToRemove) {
+      this.responseCache.delete(key);
+    }
+    
+    this.log(`Removed ${entriesToRemove.length} old entries from memory cache`);
+  }
+  
+  /**
+   * Clear the cache (both in-memory and persistent)
+   */
+  public clearCache(): void {
+    this.responseCache.clear();
+    
+    if (this.storageService) {
+      this.storageService.clearCache();
+    }
+    
+    this.log('Cache cleared');
   }
 
   /**
-   * Cancel an active request
-   * @param requestId The ID of the request to cancel
-   * @returns True if a request was cancelled, false otherwise
+   * Cancel an ongoing request
    */
   cancelRequest(requestId: string): boolean {
+    console.log(`OllamaService: Attempting to cancel request ${requestId}`);
+    
     const controller = this.activeRequests.get(requestId);
+    
     if (controller) {
-      this.log(`Cancelling request with ID: ${requestId}`);
-      controller.abort();
-      this.activeRequests.delete(requestId);
-      return true;
+      try {
+        console.log(`OllamaService: AbortController found for ${requestId}, sending abort signal...`);
+        // Force immediate abort of the fetch request
+        controller.abort();
+        this.activeRequests.delete(requestId);
+        
+        // Also send a direct cancellation request to Ollama's API
+        this.sendCancellationRequest(requestId)
+          .then(() => console.log(`Direct cancellation request sent to Ollama for ${requestId}`))
+          .catch(err => console.error(`Failed to send direct cancellation to Ollama: ${err}`));
+        
+        console.log(`Request ${requestId} canceled successfully`);
+        return true;
+      } catch (error) {
+        console.error(`OllamaService: Error canceling request ${requestId}:`, error);
+        // Still remove from active requests to avoid hanging requests
+        this.activeRequests.delete(requestId); 
+        return false;
+      }
     }
+    
+    console.warn(`OllamaService: Request ${requestId} not found for cancellation`);
     return false;
   }
 
   /**
-   * Send a request to the Ollama API with streaming
-   * @param prompt The prepared prompt to send
-   * @param model The model to use
-   * @param includeNotebookContext Whether to include notebook context
-   * @param onUpdate Optional callback for streaming updates
-   * @param requestId Optional ID for this request (for cancellation)
-   * @returns The generated response text and cache status
-   * @private
+   * Send a direct cancellation request to Ollama's API
+   * This attempts to send a direct signal to stop generation
+   */
+  private async sendCancellationRequest(requestId: string): Promise<void> {
+    try {
+      // Create a new AbortController for the cancellation request itself
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 3000); // 3 second timeout
+      
+      // Attempt to send a POST request to Ollama's cancellation endpoint
+      // This is a more direct approach to ensure the generation stops
+      await fetch(`${this.baseUrl}/api/cancel`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ request_id: requestId }),
+        signal: controller.signal
+      });
+      
+      clearTimeout(timeoutId);
+      this.log(`Direct cancellation request for ${requestId} completed`);
+    } catch (error) {
+      // If this fails, log it but don't throw - we've already tried the AbortController approach
+      this.log(`Error in direct cancellation request: ${error}`);
+    }
+  }
+
+  /**
+   * Handle a request cancellation during streaming
+   */
+  private handleStreamCancellation(requestId: string, controller: AbortController, fullResponseText: string, onUpdate?: (partialResponse: string, done: boolean, fromCache?: boolean) => void): void {
+    this.log(`Request ${requestId} was cancelled during streaming`);
+    
+    // If we have an update callback, call it to indicate cancellation
+    if (onUpdate) {
+      onUpdate(fullResponseText + '\n\n[Response generation stopped]', true, false);
+    }
+    
+    // Remove the active request
+    this.activeRequests.delete(requestId);
+  }
+
+  /**
+   * Send a request to Ollama
    */
   private async sendRequest(
     prompt: string, 
@@ -217,7 +503,10 @@ export class OllamaService {
 
     // Create AbortController for this request
     const controller = new AbortController();
+    
+    // Store controller for potential cancellation
     if (requestId) {
+      console.log(`Setting up AbortController for request ${requestId}`);
       this.activeRequests.set(requestId, controller);
     }
 
@@ -244,15 +533,38 @@ export class OllamaService {
         let fullResponseText = '';
         const decoder = new TextDecoder();
 
-        while (true) {
+        // Flag to track if cancellation was requested
+        let cancelled = false;
+
+        // Setup listener for abort signals
+        controller.signal.addEventListener('abort', () => {
+          console.log(`Abort detected for request ${requestId}`);
+          cancelled = true;
+          
+          this.handleStreamCancellation(
+            requestId || 'unknown', 
+            controller, 
+            fullResponseText, 
+            onUpdate
+          );
+        });
+
+        // Read the stream until done or cancelled
+        while (!cancelled) {
           try {
             const { done, value } = await reader.read();
+            
+            // Check if we've been cancelled during the read
+            if (cancelled) {
+              console.log(`Cancellation detected after read for ${requestId}`);
+              break;
+            }
             
             if (done) {
               onUpdate(fullResponseText, true, false);
               // Cache the full response
               this.cacheResponse(prompt, model, fullResponseText);
-              console.log(`[OllamaService] Request completed in ${Date.now() - requestStartTime}ms. Response cached.`);
+              this.log(`Request completed in ${Date.now() - requestStartTime}ms. Response cached.`);
 
               // Clean up the active request
               if (requestId) {
@@ -278,14 +590,21 @@ export class OllamaService {
               }
             }
           } catch (error: any) {
-            if (error.name === 'AbortError') {
-              this.log('Request was cancelled');
-              onUpdate(fullResponseText + '\n\n[Request cancelled by user]', true, false);
+            if (error.name === 'AbortError' || cancelled) {
+              console.log(`Read was aborted for request ${requestId}`);
               return { response: fullResponseText, fromCache: false };
             }
             throw error;
           }
         }
+        
+        // If we exit the loop due to cancellation
+        if (cancelled) {
+          console.log(`Exited stream loop due to cancellation for ${requestId}`);
+          return { response: fullResponseText, fromCache: false };
+        }
+        
+        return { response: fullResponseText, fromCache: false };
       } else {
         // Non-streaming implementation (using fetch for consistency)
         const response = await fetch(fullUrl, {
@@ -320,7 +639,7 @@ export class OllamaService {
 
         // Cache the response
         this.cacheResponse(prompt, model, fullResponseText);
-        console.log(`[OllamaService] Request completed in ${Date.now() - requestStartTime}ms. Response cached.`);
+        this.log(`Request completed in ${Date.now() - requestStartTime}ms. Response cached.`);
         
         // Clean up the active request
         if (requestId) {
@@ -467,5 +786,13 @@ export class OllamaService {
     const selectedModel = model || this.defaultModel;
     const prompt = `Suggest improvements for this code:\n\`\`\`\n${code}\n\`\`\``;
     return this.sendRequestWithNotebookContext(prompt, selectedModel, code, onUpdate, requestId);
+  }
+
+  /**
+   * Get all active request IDs
+   * @returns Array of active request IDs
+   */
+  getActiveRequests(): string[] {
+    return Array.from(this.activeRequests.keys());
   }
 } 
