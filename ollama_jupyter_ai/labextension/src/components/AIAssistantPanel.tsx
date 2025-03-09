@@ -1,6 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { INotebookTracker } from '@jupyterlab/notebook';
 import { OllamaService } from '../services/OllamaService';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faRefresh, faCopy, faRedo, faBolt, faCode, faMagic, faRobot, faCog, faPaperPlane } from '@fortawesome/free-solid-svg-icons';
+import { IconProp } from '@fortawesome/fontawesome-svg-core';
 // Other imports as needed throughout the file
 
 interface Message {
@@ -28,7 +31,7 @@ type TabType = 'chat' | 'analyze' | 'improve';
 // Function to format timestamp difference in a human-readable way
 const formatTimeDiff = (start?: number, end?: number): string => {
   if (!start || !end) return '';
-  
+
   const diffMs = end - start;
   if (diffMs < 1000) {
     return `${diffMs}ms`;
@@ -44,7 +47,7 @@ const formatTimeDiff = (start?: number, end?: number): string => {
 // Function to format absolute timestamp
 const formatTimestamp = (timestamp?: number): string => {
   if (!timestamp) return '';
-  
+
   const date = new Date(timestamp);
   return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 };
@@ -52,7 +55,7 @@ const formatTimestamp = (timestamp?: number): string => {
 // Simple syntax highlighting function for code
 const applySyntaxHighlighting = (code: string, language: string): JSX.Element => {
   if (!code) return <></>;
-  
+
   // Different patterns for different languages
   if (language === 'python') {
     // Python syntax highlighting patterns
@@ -62,7 +65,7 @@ const applySyntaxHighlighting = (code: string, language: string): JSX.Element =>
     const comments = /(#.*$)/gm;
     const numbers = /\b(\d+(\.\d+)?)\b/g;
     const functions = /\b([a-zA-Z_][a-zA-Z0-9_]*(?=\s*\())\b/g;
-    
+
     // Apply highlighting by wrapping with spans with CSS classes
     let highlighted = code
       .replace(keywords, '<span class="jp-AIAssistant-code-keyword">$&</span>')
@@ -71,9 +74,9 @@ const applySyntaxHighlighting = (code: string, language: string): JSX.Element =>
       .replace(comments, '<span class="jp-AIAssistant-code-comment">$&</span>')
       .replace(numbers, '<span class="jp-AIAssistant-code-number">$&</span>')
       .replace(functions, '<span class="jp-AIAssistant-code-function">$&</span>');
-      
+
     return <code dangerouslySetInnerHTML={{ __html: highlighted }} />;
-  } 
+  }
   else if (language === 'javascript' || language === 'js' || language === 'typescript' || language === 'ts') {
     // JavaScript/TypeScript syntax highlighting patterns
     const keywords = /\b(break|case|catch|class|const|continue|debugger|default|delete|do|else|export|extends|finally|for|function|if|import|in|instanceof|new|return|super|switch|this|throw|try|typeof|var|void|while|with|yield|let|static|enum|await|async)\b/g;
@@ -82,7 +85,7 @@ const applySyntaxHighlighting = (code: string, language: string): JSX.Element =>
     const comments = /(\/\/.*$|\/\*[\s\S]*?\*\/)/gm;
     const numbers = /\b(\d+(\.\d+)?)\b/g;
     const functions = /\b([a-zA-Z_][a-zA-Z0-9_]*(?=\s*\())\b/g;
-    
+
     let highlighted = code
       .replace(keywords, '<span class="jp-AIAssistant-code-keyword">$&</span>')
       .replace(builtins, '<span class="jp-AIAssistant-code-builtin">$&</span>')
@@ -90,7 +93,7 @@ const applySyntaxHighlighting = (code: string, language: string): JSX.Element =>
       .replace(comments, '<span class="jp-AIAssistant-code-comment">$&</span>')
       .replace(numbers, '<span class="jp-AIAssistant-code-number">$&</span>')
       .replace(functions, '<span class="jp-AIAssistant-code-function">$&</span>');
-      
+
     return <code dangerouslySetInnerHTML={{ __html: highlighted }} />;
   }
   else {
@@ -99,13 +102,13 @@ const applySyntaxHighlighting = (code: string, language: string): JSX.Element =>
     const strings = /(\".*?\"|\'.*?\'|`.*?`)/g;
     const comments = /(\/\/.*$|\/\*[\s\S]*?\*\/|#.*$)/gm;
     const numbers = /\b(\d+(\.\d+)?)\b/g;
-    
+
     let highlighted = code
       .replace(keywords, '<span class="jp-AIAssistant-code-keyword">$&</span>')
       .replace(strings, '<span class="jp-AIAssistant-code-string">$&</span>')
       .replace(comments, '<span class="jp-AIAssistant-code-comment">$&</span>')
       .replace(numbers, '<span class="jp-AIAssistant-code-number">$&</span>');
-      
+
     return <code dangerouslySetInnerHTML={{ __html: highlighted }} />;
   }
 };
@@ -117,7 +120,7 @@ const formatMessageWithCodeBlocks = (content: string): JSX.Element => {
   const parts: JSX.Element[] = [];
   let lastIndex = 0;
   let match;
-  
+
   // Process each code block match
   while ((match = codeBlockRegex.exec(content)) !== null) {
     // Add text before the code block
@@ -128,11 +131,11 @@ const formatMessageWithCodeBlocks = (content: string): JSX.Element => {
         </span>
       );
     }
-    
+
     // Extract language and code
     const language = match[1] || 'plaintext';
     const code = match[2];
-    
+
     // Add formatted code block with syntax highlighting
     parts.push(
       <div key={`code-${match.index}`} className="jp-AIAssistant-code-block">
@@ -144,10 +147,10 @@ const formatMessageWithCodeBlocks = (content: string): JSX.Element => {
         </pre>
       </div>
     );
-    
+
     lastIndex = match.index + match[0].length;
   }
-  
+
   // Add remaining text after the last code block
   if (lastIndex < content.length) {
     parts.push(
@@ -156,12 +159,12 @@ const formatMessageWithCodeBlocks = (content: string): JSX.Element => {
       </span>
     );
   }
-  
+
   // If no code blocks found, format the entire content as text
   if (parts.length === 0) {
     return <span className="jp-AIAssistant-text">{formatText(content)}</span>;
   }
-  
+
   return <div className="jp-AIAssistant-formatted-content">{parts}</div>;
 };
 
@@ -183,12 +186,12 @@ export const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({ notebooks })
   const [modelError, setModelError] = useState<string>('');
   const [activeTab, setActiveTab] = useState<TabType>('chat');
   const [autoScroll, setAutoScroll] = useState(true);
-  
+
   // Chat-specific state
   const [chatMessages, setChatMessages] = useState<Message[]>([
-    { 
-      role: 'assistant', 
-      content: 'Hello! I\'m your AI assistant. How can I help you today?', 
+    {
+      role: 'assistant',
+      content: 'Hello! I\'m your AI assistant. How can I help you today?',
       status: 'complete',
       timestamp: {
         start: Date.now(),
@@ -197,12 +200,12 @@ export const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({ notebooks })
     }
   ]);
   const [chatInput, setChatInput] = useState<string>('');
-  
+
   // Analyze-specific state
   const [analyzeMessages, setAnalyzeMessages] = useState<Message[]>([
-    { 
-      role: 'assistant', 
-      content: 'I can analyze your code for errors and issues. Select a cell and click "Analyze Code".', 
+    {
+      role: 'assistant',
+      content: 'I can analyze your code for errors and issues. Select a cell and click "Analyze Code".',
       status: 'complete',
       timestamp: {
         start: Date.now(),
@@ -210,12 +213,12 @@ export const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({ notebooks })
       }
     }
   ]);
-  
+
   // Improve-specific state
   const [improveMessages, setImproveMessages] = useState<Message[]>([
-    { 
-      role: 'assistant', 
-      content: 'I can suggest improvements for your code. Select a cell and click "Improve Code".', 
+    {
+      role: 'assistant',
+      content: 'I can suggest improvements for your code. Select a cell and click "Improve Code".',
       status: 'complete',
       timestamp: {
         start: Date.now(),
@@ -223,7 +226,7 @@ export const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({ notebooks })
       }
     }
   ]);
-  
+
   // Create refs for conversation containers
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const analyzeContainerRef = useRef<HTMLDivElement>(null);
@@ -273,7 +276,7 @@ export const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({ notebooks })
       const availableModels = await ollamaServiceInstance.getAvailableModels();
       if (availableModels.length > 0) {
         setModels(availableModels);
-        
+
         // Set the default model to the first one in the list
         if (!availableModels.includes(selectedModel)) {
           setSelectedModel(availableModels[0]);
@@ -303,18 +306,18 @@ export const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({ notebooks })
         console.debug('Notebook widget found');
         const notebook = notebooks.currentWidget.content;
         const model = notebook.model;
-        
+
         if (model) {
           console.debug('Notebook model found, cell count:', model.cells.length);
-          
+
           // Get active cell information
           const activeCellIndex = notebook.activeCellIndex;
           console.debug('Active cell index:', activeCellIndex);
-          
+
           const cells = model.cells;
           // Convert to a structured format with cell types and indices
           const cellContents = [];
-          
+
           for (let i = 0; i < cells.length; i++) {
             const cellModel = cells.get(i);
             const cellType = cellModel.type;
@@ -332,14 +335,14 @@ export const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({ notebooks })
               cellContent = '// Unable to extract cell content';
               console.error('Error extracting cell content:', e);
             }
-            
+
             // Add more context about the cell
             const isActive = (i === activeCellIndex);
             cellContents.push(
-              `--- Cell ${i+1}/${cells.length} [${cellType}]${isActive ? ' (ACTIVE)' : ''} ---\n${cellContent}`
+              `--- Cell ${i + 1}/${cells.length} [${cellType}]${isActive ? ' (ACTIVE)' : ''} ---\n${cellContent}`
             );
           }
-          
+
           content = cellContents.join('\n\n');
           console.debug('Total notebook content length:', content.length);
         }
@@ -355,11 +358,11 @@ export const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({ notebooks })
       if (notebooks.currentWidget) {
         const notebook = notebooks.currentWidget.content;
         const model = notebook.model;
-        
+
         if (model) {
           const activeCellIndex = notebook.activeCellIndex;
           const activeCell = model.cells.get(activeCellIndex);
-          
+
           if (activeCell) {
             // Fix for [object Object] issue
             let content = '';
@@ -375,10 +378,10 @@ export const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({ notebooks })
               content = '// Unable to extract cell content';
               console.error('Error extracting active cell content:', e);
             }
-            
-            console.debug(`Active cell content (${activeCell.type}):`, 
+
+            console.debug(`Active cell content (${activeCell.type}):`,
               content.length > 20 ? content.substring(0, 20) + '...' : content);
-              
+
             return {
               content: content,
               cellType: activeCell.type
@@ -444,20 +447,20 @@ export const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({ notebooks })
     try {
       // Use streaming response for better user experience
       let responseComplete = false;
-      
+
       ollamaServiceInstance.analyzeCode(
-        activeCellData.content, 
+        activeCellData.content,
         selectedModel,
         (partialResponse, done, fromCache) => {
           // Update the message with each partial response
           setAnalyzeMessages(prev => {
             const updatedMessages = [...prev];
             const lastMessage = updatedMessages[updatedMessages.length - 1];
-            
+
             if (lastMessage && lastMessage.status === 'loading') {
               lastMessage.content = partialResponse;
               lastMessage.fromCache = fromCache;
-              
+
               // When the response is complete, update the status and timestamp
               if (done && !responseComplete) {
                 lastMessage.status = 'complete';
@@ -469,7 +472,7 @@ export const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({ notebooks })
                 setIsLoading(false);
               }
             }
-            
+
             return updatedMessages;
           });
         },
@@ -494,7 +497,7 @@ export const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({ notebooks })
       setIsLoading(false);
     }
   };
-  
+
   // Function to get suggestions for improving the current cell
   const improveCurrentCell = async () => {
     // Get the content of the active cell
@@ -547,20 +550,20 @@ export const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({ notebooks })
     try {
       // Use streaming response for better user experience
       let responseComplete = false;
-      
+
       ollamaServiceInstance.suggestCodeImprovements(
-        activeCellData.content, 
+        activeCellData.content,
         selectedModel,
         (partialResponse, done, fromCache) => {
           // Update the message with each partial response
           setImproveMessages(prev => {
             const updatedMessages = [...prev];
             const lastMessage = updatedMessages[updatedMessages.length - 1];
-            
+
             if (lastMessage && lastMessage.status === 'loading') {
               lastMessage.content = partialResponse;
               lastMessage.fromCache = fromCache;
-              
+
               // When the response is complete, update the status and timestamp
               if (done && !responseComplete) {
                 lastMessage.status = 'complete';
@@ -572,7 +575,7 @@ export const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({ notebooks })
                 setIsLoading(false);
               }
             }
-            
+
             return updatedMessages;
           });
         },
@@ -631,22 +634,22 @@ export const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({ notebooks })
     try {
       // Use streaming for better user experience
       let responseComplete = false;
-      
+
       // Start the streaming response
       ollamaServiceInstance.generateResponse(
-        chatInput, 
-        selectedModel, 
-        undefined, 
+        chatInput,
+        selectedModel,
+        undefined,
         (partialResponse, done, fromCache) => {
           // Update the message with each partial response
           setChatMessages(prev => {
             const updatedMessages = [...prev];
             const lastMessage = updatedMessages[updatedMessages.length - 1];
-            
+
             if (lastMessage && lastMessage.status === 'loading') {
               lastMessage.content = partialResponse;
               lastMessage.fromCache = fromCache;
-              
+
               // When the response is complete, update the status and timestamp
               if (done && !responseComplete) {
                 lastMessage.status = 'complete';
@@ -658,7 +661,7 @@ export const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({ notebooks })
                 setIsLoading(false);
               }
             }
-            
+
             return updatedMessages;
           });
         },
@@ -693,38 +696,38 @@ export const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({ notebooks })
         break;
       }
     }
-    
+
     if (!lastUserMessage || isLoading) {
       return;
     }
-    
+
     // Filter out the error message
     const filteredMessages = chatMessages.filter(msg => msg.status !== 'error');
-    
+
     // Add a new thinking message
-    const thinkingMessage: Message = { 
-      role: 'assistant', 
-      content: 'Thinking...', 
+    const thinkingMessage: Message = {
+      role: 'assistant',
+      content: 'Thinking...',
       status: 'loading',
       timestamp: {
         start: Date.now()
       }
     };
-    
+
     setChatMessages([...filteredMessages, thinkingMessage]);
     setIsLoading(true);
-    
+
     try {
       // Get notebook content for context
       const notebookContent = getNotebookContent();
-      
+
       // Call Ollama API
       const response = await ollamaServiceInstance.generateResponse(
         lastUserMessage.content,
         selectedModel,
         notebookContent
       );
-      
+
       // Replace the thinking message with the actual response
       setChatMessages(prev => {
         const updatedMessages = [...prev];
@@ -742,7 +745,7 @@ export const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({ notebooks })
       });
     } catch (error) {
       console.error('Error retrying response:', error);
-      
+
       setChatMessages(prev => {
         const updatedMessages = [...prev];
         if (updatedMessages.length > 0 && updatedMessages[updatedMessages.length - 1].status === 'loading') {
@@ -792,7 +795,7 @@ export const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({ notebooks })
   // Stop ongoing request
   const stopRequest = (requestId?: string) => {
     if (!requestId) return;
-    
+
     ollamaServiceInstance.cancelRequest(requestId);
     console.log(`Cancelled request: ${requestId}`);
   };
@@ -800,7 +803,7 @@ export const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({ notebooks })
   // Cancel the most recent ongoing request for the active tab
   const stopCurrentRequest = () => {
     let messages: Message[] = [];
-    
+
     switch (activeTab) {
       case 'chat':
         messages = chatMessages;
@@ -812,7 +815,7 @@ export const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({ notebooks })
         messages = improveMessages;
         break;
     }
-    
+
     // Find the most recent loading message
     const loadingMessage = [...messages].reverse().find(msg => msg.status === 'loading');
     if (loadingMessage && loadingMessage.requestId) {
@@ -836,32 +839,52 @@ export const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({ notebooks })
   };
 
   const renderMessage = (message: Message, index: number) => {
-    const messageClasses = `jp-AIAssistant-message jp-AIAssistant-message-${message.role} ${
-      message.status === 'loading' ? 'jp-AIAssistant-message-loading' : ''
-    } ${message.status === 'error' ? 'jp-AIAssistant-error' : ''}`;
-
-    // Format the message content
-    const formattedContent = message.role === 'assistant' && message.status === 'complete'
-      ? formatMessageWithCodeBlocks(message.content)
-      : <span className="jp-AIAssistant-text">{message.content}</span>;
+    const isUser = message.role === 'user';
+    const isLoading = message.status === 'loading';
+    const isError = message.status === 'error';
 
     return (
-      <div key={index} className={messageClasses}>
-        {formattedContent}
+      <div
+        key={index}
+        className={`jp-AIAssistant-message ${isUser ? 'jp-AIAssistant-message-user' : 'jp-AIAssistant-message-assistant'
+          } ${isLoading ? 'jp-AIAssistant-message-loading' : ''} ${isError ? 'jp-AIAssistant-error' : ''
+          }`}
+      >
+        {!isUser && (
+          <div className="jp-AIAssistant-message-controls">
+            <button
+              className="jp-AIAssistant-message-control-button"
+              title="Regenerate"
+              onClick={() => regenerateResponse()}
+            >
+              <FontAwesomeIcon icon={faRefresh} className="fa-icon-sm" />
+            </button>
+            <button
+              className="jp-AIAssistant-message-control-button"
+              title="Copy to clipboard"
+              onClick={() => {
+                navigator.clipboard.writeText(message.content);
+              }}
+            >
+              <FontAwesomeIcon icon={faCopy} className="fa-icon-sm" />
+            </button>
+          </div>
+        )}
+
+        {isUser ? (
+          <div>{message.content}</div>
+        ) : (
+          <div className="jp-AIAssistant-formatted-content">
+            {formatMessageWithCodeBlocks(message.content)}
+          </div>
+        )}
+
         {renderTimestamp(message)}
-        {message.status === 'loading' && (
-          <button className="jp-AIAssistant-action-button" onClick={() => stopRequest(message.requestId)}>
-            Stop
-          </button>
-        )}
-        {message.status === 'error' && (
+
+        {isError && (
           <button className="jp-AIAssistant-retry" onClick={handleRetry}>
+            <FontAwesomeIcon icon={faRedo} className="fa-icon-sm" />
             Retry
-          </button>
-        )}
-        {message.status === 'complete' && message.role === 'assistant' && (
-          <button className="jp-AIAssistant-action-button" onClick={regenerateResponse}>
-            Refresh
           </button>
         )}
       </div>
@@ -870,10 +893,10 @@ export const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({ notebooks })
 
   const renderTimestamp = (message: Message) => {
     if (!message.timestamp) return null;
-    
+
     const { start, end } = message.timestamp;
     let className = 'jp-AIAssistant-timestamp';
-    
+
     if (message.role === 'user') {
       className += ' jp-AIAssistant-timestamp-user';
     } else if (message.status === 'loading') {
@@ -881,7 +904,7 @@ export const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({ notebooks })
     } else if (message.status === 'error') {
       className += ' jp-AIAssistant-timestamp-error';
     }
-    
+
     if (message.role === 'assistant' && message.status === 'complete') {
       return (
         <div className={className}>
@@ -890,7 +913,7 @@ export const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({ notebooks })
         </div>
       );
     }
-    
+
     return (
       <div className={className}>
         {formatTimestamp(start)}
@@ -898,98 +921,103 @@ export const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({ notebooks })
     );
   };
 
+  const tabs: { id: TabType; label: string; icon: IconProp }[] = [
+    { id: 'chat', label: 'Chat', icon: faBolt },
+    { id: 'analyze', label: 'Analyze', icon: faCode },
+    { id: 'improve', label: 'Tools', icon: faMagic }
+  ];
+
   return (
     <div className="jp-AIAssistant">
       <div className="jp-AIAssistant-header">
-        <div className="jp-AIAssistant-title">Ollama AI Assistant</div>
+        <div className="jp-AIAssistant-title">
+          <FontAwesomeIcon icon={faRobot} className="fa-icon-md" style={{ marginRight: '8px' }} />
+          Ollama AI Assistant
+        </div>
+        <div className="jp-AIAssistant-scrollControl">
+          <label>
+            <input
+              type="checkbox"
+              checked={autoScroll}
+              onChange={() => setAutoScroll(!autoScroll)}
+            />
+            Auto-scroll
+          </label>
+        </div>
+        <div className="jp-AIAssistant-modelSelector">
+          <select
+            className="jp-AIAssistant-modelSelect"
+            value={selectedModel}
+            onChange={handleModelChange}
+            disabled={isLoading}
+          >
+            {models.length === 0 ? (
+              <option value="">Loading models...</option>
+            ) : (
+              models.map(model => (
+                <option key={model} value={model}>
+                  {model}
+                </option>
+              ))
+            )}
+          </select>
+          <button
+            className="jp-AIAssistant-message-control-button"
+            style={{ marginLeft: '8px' }}
+            title="Settings"
+          >
+            <FontAwesomeIcon icon={faCog} className="fa-icon-sm" />
+          </button>
+        </div>
       </div>
-      
-      <div className="jp-AIAssistant-scrollControl">
-        <label>
-          <input 
-            type="checkbox" 
-            checked={autoScroll} 
-            onChange={() => setAutoScroll(!autoScroll)} 
-          />
-          Auto-scroll
-        </label>
-      </div>
-      
-      <div className="jp-AIAssistant-modelSelector">
-        <label htmlFor="model-selector">Model:</label>
-        <select 
-          id="model-selector" 
-          value={selectedModel} 
-          onChange={handleModelChange}
-          disabled={isLoading || models.length === 0}
-          className="jp-AIAssistant-modelSelect"
-        >
-          {models.length === 0 && <option value="">Loading models...</option>}
-          {models.map(model => (
-            <option key={model} value={model}>
-              {model}
-            </option>
-          ))}
-        </select>
-        {modelError && <div className="jp-AIAssistant-modelError">{modelError}</div>}
-      </div>
-      
+
+
+
       <div className="jp-AIAssistant-tabs">
-        <button 
-          className={`jp-AIAssistant-tab ${activeTab === 'chat' ? 'jp-AIAssistant-tab-active' : ''}`}
-          onClick={() => setActiveTab('chat')}
-        >
-          Chat
-        </button>
-        <button 
-          className={`jp-AIAssistant-tab ${activeTab === 'analyze' ? 'jp-AIAssistant-tab-active' : ''}`}
-          onClick={() => setActiveTab('analyze')}
-        >
-          Analyze Code
-        </button>
-        <button 
-          className={`jp-AIAssistant-tab ${activeTab === 'improve' ? 'jp-AIAssistant-tab-active' : ''}`}
-          onClick={() => setActiveTab('improve')}
-        >
-          Improve Code
-        </button>
+        {tabs.map(tab => (
+          <button
+            key={tab.id}
+            className={`jp-AIAssistant-tab ${activeTab === tab.id ? 'jp-AIAssistant-tab-active' : ''}`}
+            onClick={() => setActiveTab(tab.id)}
+          >
+            <FontAwesomeIcon icon={tab.icon} className="fa-icon-sm" />
+            {tab.label}
+          </button>
+        ))}
       </div>
-      
+
       {activeTab === 'chat' && (
         <>
           <div className="jp-AIAssistant-conversation" ref={chatContainerRef}>
             {chatMessages.map(renderMessage)}
           </div>
-          <form className="jp-AIAssistant-input-form" onSubmit={handleChatSubmit}>
-            <textarea 
-              className="jp-AIAssistant-input-textarea"
-              value={chatInput}
-              onChange={handleChatInputChange}
-              placeholder="Ask me anything..."
-              disabled={isLoading}
-            />
-            <div className="jp-AIAssistant-input-actions">
-              {isLoading && (
-                <button 
-                  type="button"
-                  className="jp-AIAssistant-input-button"
-                  onClick={stopCurrentRequest}
-                >
-                  Stop
-                </button>
-              )}
-              <button 
-                type="submit" 
+          <div className="jp-AIAssistant-input">
+            <form onSubmit={handleChatSubmit} className="jp-AIAssistant-input-form">
+              <textarea
+                className="jp-AIAssistant-input-textarea"
+                value={chatInput}
+                onChange={handleChatInputChange}
+                placeholder="Ask me anything..."
+                disabled={isLoading}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    handleChatSubmit(e);
+                  }
+                }}
+              />
+              <button
+                type="submit"
                 className="jp-AIAssistant-input-button"
                 disabled={isLoading || !chatInput.trim()}
               >
-                Send
+                <FontAwesomeIcon icon={faPaperPlane} className="fa-icon-sm" />
               </button>
-            </div>
-          </form>
+            </form>
+          </div>
         </>
       )}
-      
+
       {activeTab === 'analyze' && (
         <>
           <div className="jp-AIAssistant-conversation" ref={analyzeContainerRef}>
@@ -998,7 +1026,7 @@ export const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({ notebooks })
           <div className="jp-AIAssistant-action">
             <div className="jp-AIAssistant-input-actions">
               {isLoading && (
-                <button 
+                <button
                   type="button"
                   className="jp-AIAssistant-action-button"
                   onClick={stopCurrentRequest}
@@ -1006,8 +1034,8 @@ export const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({ notebooks })
                   Stop
                 </button>
               )}
-              <button 
-                className="jp-AIAssistant-action-button jp-AIAssistant-action-button-full" 
+              <button
+                className="jp-AIAssistant-action-button jp-AIAssistant-action-button-full"
                 onClick={analyzeCurrentCell}
                 disabled={isLoading}
               >
@@ -1017,7 +1045,7 @@ export const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({ notebooks })
           </div>
         </>
       )}
-      
+
       {activeTab === 'improve' && (
         <>
           <div className="jp-AIAssistant-conversation" ref={improveContainerRef}>
@@ -1026,7 +1054,7 @@ export const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({ notebooks })
           <div className="jp-AIAssistant-action">
             <div className="jp-AIAssistant-input-actions">
               {isLoading && (
-                <button 
+                <button
                   type="button"
                   className="jp-AIAssistant-action-button"
                   onClick={stopCurrentRequest}
@@ -1034,8 +1062,8 @@ export const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({ notebooks })
                   Stop
                 </button>
               )}
-              <button 
-                className="jp-AIAssistant-action-button jp-AIAssistant-action-button-full" 
+              <button
+                className="jp-AIAssistant-action-button jp-AIAssistant-action-button-full"
                 onClick={improveCurrentCell}
                 disabled={isLoading}
               >

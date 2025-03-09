@@ -133,7 +133,7 @@ The extension uses several Node.js packages that are specified in the `package.j
 4. **Install Python Dependencies**:
    ```bash
    pip install jupyter_packaging jupyterlab~=4.0.0
-   pip install -e .
+   
    ```
 
 5. **Install Node.js Dependencies**:
