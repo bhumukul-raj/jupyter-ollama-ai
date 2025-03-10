@@ -171,6 +171,28 @@ class LocalStorageCacheService implements OllamaStorageService {
   }
 }
 
+// Add custom error types
+export class OllamaError extends Error {
+  constructor(message: string, public code?: string) {
+    super(message);
+    this.name = 'OllamaError';
+  }
+}
+
+export class OllamaConnectionError extends OllamaError {
+  constructor(message: string) {
+    super(message, 'CONNECTION_ERROR');
+    this.name = 'OllamaConnectionError';
+  }
+}
+
+export class OllamaTimeoutError extends OllamaError {
+  constructor(message: string) {
+    super(message, 'TIMEOUT_ERROR');
+    this.name = 'OllamaTimeoutError';
+  }
+}
+
 // Enhanced OllamaService class
 export class OllamaService {
   private baseUrl: string;
@@ -222,22 +244,33 @@ export class OllamaService {
     try {
       this.log('Fetching available models');
       
-      const response = await axios.get<{ models: OllamaModel[] }>(`${this.baseUrl}/api/tags`);
-      const models = response.data.models.map(model => model.name);
+      const response = await axios.get<{ models: OllamaModel[] }>(`${this.baseUrl}/api/tags`, {
+        timeout: 5000 // 5 second timeout
+      });
       
+      if (!response.data || !Array.isArray(response.data.models)) {
+        throw new OllamaError('Invalid response format from Ollama API');
+      }
+      
+      const models = response.data.models.map(model => model.name);
       this.log('Found models:', models);
       return models;
     } catch (error) {
       this.log('Error fetching models:', error);
       
-      // Try to return a sensible default if we can't reach Ollama
-      if (axios.isAxiosError(error) && error.code === 'ECONNREFUSED') {
-        // Ollama might not be running
-        this.log('Ollama seems to be offline. Is it running?');
-        throw new Error('Could not connect to Ollama. Please make sure it is running on ' + this.baseUrl);
+      if (axios.isAxiosError(error)) {
+        if (error.code === 'ECONNREFUSED') {
+          throw new OllamaConnectionError('Could not connect to Ollama. Please make sure it is running on ' + this.baseUrl);
+        }
+        if (error.code === 'ETIMEDOUT' || error.code === 'ECONNABORTED') {
+          throw new OllamaTimeoutError('Connection to Ollama timed out. Please check your network connection.');
+        }
+        if (error.response) {
+          throw new OllamaError(`Ollama API error: ${error.response.status} - ${error.response.statusText}`);
+        }
       }
       
-      return [];
+      throw new OllamaError('Failed to fetch models from Ollama: ' + (error instanceof Error ? error.message : String(error)));
     }
   }
   
@@ -446,24 +479,30 @@ export class OllamaService {
   private handleStreamCancellation(requestId: string, controller: AbortController, fullResponseText: string, onUpdate?: (partialResponse: string, done: boolean, fromCache?: boolean) => void): void {
     this.log(`Request ${requestId} was cancelled during streaming`);
     
+    const responseWithCancellation = fullResponseText + '\n\n[Generation stopped by user]';
+    
     // If we have an update callback, call it to indicate cancellation
     if (onUpdate) {
-      onUpdate(fullResponseText + '\n\n[Response generation stopped]', true, false);
+      onUpdate(responseWithCancellation, true, false);
     }
+    
+    // Cache the partial response with cancellation message
+    this.cacheResponse(requestId, this.defaultModel, responseWithCancellation);
     
     // Remove the active request
     this.activeRequests.delete(requestId);
   }
 
   /**
-   * Send a request to Ollama
+   * Send a request to Ollama with retry logic for transient failures
    */
   private async sendRequest(
     prompt: string, 
     model: string, 
     includeNotebookContext: boolean = false,
     onUpdate?: (partialResponse: string, done: boolean, fromCache?: boolean) => void,
-    requestId?: string
+    requestId?: string,
+    retryCount: number = 3
   ): Promise<{ response: string, fromCache: boolean }> {
     this.log('Sending request to Ollama API:', {
       model,
@@ -472,17 +511,10 @@ export class OllamaService {
       requestId
     });
 
-    // Check cache first for non-streaming requests
-    if (!onUpdate) {
+    // Check cache first
+    if (!onUpdate || this.useTokenStreaming) {
       const cachedResponse = this.getCachedResponse(prompt, model);
       if (cachedResponse) {
-        return cachedResponse;
-      }
-    } else {
-      // Even for streaming requests, we can check the cache
-      const cachedResponse = this.getCachedResponse(prompt, model);
-      if (cachedResponse) {
-        // For streaming requests, immediately deliver the full cached response
         if (onUpdate) {
           onUpdate(cachedResponse.response, true, true);
         }
@@ -498,170 +530,194 @@ export class OllamaService {
         temperature: 0.7,
         max_tokens: 2048
       },
-      stream: !!onUpdate // Enable streaming if onUpdate callback is provided
+      stream: !!onUpdate
     };
 
-    // Create AbortController for this request
     const controller = new AbortController();
-    
-    // Store controller for potential cancellation
     if (requestId) {
-      console.log(`Setting up AbortController for request ${requestId}`);
       this.activeRequests.set(requestId, controller);
     }
 
-    try {
-      const requestStartTime = Date.now();
-      if (onUpdate) {
-        // Streaming implementation
-        const response = await fetch(fullUrl, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(requestBody),
-          signal: controller.signal
-        });
+    let lastError: Error | null = null;
+    let attempt = 0;
 
-        if (!response.ok) {
-          throw new Error(`HTTP error! Status: ${response.status}`);
-        }
-
-        const reader = response.body?.getReader();
-        if (!reader) {
-          throw new Error('Response body reader could not be created');
-        }
-
-        let fullResponseText = '';
-        const decoder = new TextDecoder();
-
-        // Flag to track if cancellation was requested
-        let cancelled = false;
-
-        // Setup listener for abort signals
-        controller.signal.addEventListener('abort', () => {
-          console.log(`Abort detected for request ${requestId}`);
-          cancelled = true;
-          
-          this.handleStreamCancellation(
-            requestId || 'unknown', 
-            controller, 
-            fullResponseText, 
+    while (attempt < retryCount) {
+      try {
+        const requestStartTime = Date.now();
+        
+        if (onUpdate) {
+          return await this.handleStreamingRequest(
+            fullUrl,
+            requestBody,
+            controller,
+            requestId,
+            prompt,
+            model,
             onUpdate
           );
-        });
-
-        // Read the stream until done or cancelled
-        while (!cancelled) {
-          try {
-            const { done, value } = await reader.read();
-            
-            // Check if we've been cancelled during the read
-            if (cancelled) {
-              console.log(`Cancellation detected after read for ${requestId}`);
-              break;
-            }
-            
-            if (done) {
-              onUpdate(fullResponseText, true, false);
-              // Cache the full response
-              this.cacheResponse(prompt, model, fullResponseText);
-              this.log(`Request completed in ${Date.now() - requestStartTime}ms. Response cached.`);
-
-              // Clean up the active request
-              if (requestId) {
-                this.activeRequests.delete(requestId);
-              }
-              
-              return { response: fullResponseText, fromCache: false };
-            }
-
-            // Decode the chunk and split into lines (JSONL format)
-            const chunk = decoder.decode(value, { stream: true });
-            const lines = chunk.split('\n').filter(line => line.trim());
-            
-            for (const line of lines) {
-              try {
-                const jsonResponse = JSON.parse(line) as OllamaResponse;
-                if (jsonResponse.response) {
-                  fullResponseText += jsonResponse.response;
-                  onUpdate(fullResponseText, jsonResponse.done, false);
-                }
-              } catch (e) {
-                this.log('Error parsing JSON line:', e);
-              }
-            }
-          } catch (error: any) {
-            if (error.name === 'AbortError' || cancelled) {
-              console.log(`Read was aborted for request ${requestId}`);
-              return { response: fullResponseText, fromCache: false };
-            }
-            throw error;
-          }
+        } else {
+          return await this.handleNonStreamingRequest(
+            fullUrl,
+            requestBody,
+            controller,
+            requestId,
+            prompt,
+            model
+          );
+        }
+      } catch (error) {
+        lastError = error instanceof Error ? error : new Error(String(error));
+        
+        // Don't retry if request was cancelled
+        if (error instanceof Error && error.name === 'AbortError') {
+          throw error;
         }
         
-        // If we exit the loop due to cancellation
+        // Don't retry if it's a non-transient error
+        if (axios.isAxiosError(error) && error.response && error.response.status >= 400 && error.response.status < 500) {
+          throw new OllamaError(`Ollama API error: ${error.response.status} - ${error.response.statusText}`);
+        }
+        
+        attempt++;
+        if (attempt < retryCount) {
+          const delay = Math.min(1000 * Math.pow(2, attempt), 5000); // Exponential backoff, max 5 seconds
+          await new Promise(resolve => setTimeout(resolve, delay));
+          this.log(`Retrying request (attempt ${attempt + 1}/${retryCount})`);
+        }
+      }
+    }
+
+    // If we get here, all retries failed
+    throw lastError || new OllamaError('Failed to get response from Ollama API after multiple attempts');
+  }
+
+  /**
+   * Handle streaming request to Ollama
+   */
+  private async handleStreamingRequest(
+    fullUrl: string,
+    requestBody: any,
+    controller: AbortController,
+    requestId: string | undefined,
+    prompt: string,
+    model: string,
+    onUpdate: (partialResponse: string, done: boolean, fromCache?: boolean) => void
+  ): Promise<{ response: string, fromCache: boolean }> {
+    const response = await fetch(fullUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(requestBody),
+      signal: controller.signal
+    });
+
+    if (!response.ok) {
+      throw new OllamaError(`HTTP error! Status: ${response.status}`);
+    }
+
+    const reader = response.body?.getReader();
+    if (!reader) {
+      throw new OllamaError('Response body reader could not be created');
+    }
+
+    let fullResponseText = '';
+    const decoder = new TextDecoder();
+    let cancelled = false;
+
+    controller.signal.addEventListener('abort', () => {
+      cancelled = true;
+      this.handleStreamCancellation(requestId || 'unknown', controller, fullResponseText, onUpdate);
+    });
+
+    while (!cancelled) {
+      try {
+        const { done, value } = await reader.read();
+        
         if (cancelled) {
-          console.log(`Exited stream loop due to cancellation for ${requestId}`);
+          break;
+        }
+        
+        if (done) {
+          onUpdate(fullResponseText, true, false);
+          this.cacheResponse(prompt, model, fullResponseText);
+          if (requestId) {
+            this.activeRequests.delete(requestId);
+          }
           return { response: fullResponseText, fromCache: false };
         }
-        
-        return { response: fullResponseText, fromCache: false };
-      } else {
-        // Non-streaming implementation (using fetch for consistency)
-        const response = await fetch(fullUrl, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(requestBody),
-          signal: controller.signal
-        });
 
-        if (!response.ok) {
-          throw new Error(`HTTP error! Status: ${response.status}`);
-        }
-
-        const responseText = await response.text();
-        const lines = responseText.trim().split('\n');
-        let fullResponseText = '';
+        const chunk = decoder.decode(value, { stream: true });
+        const lines = chunk.split('\n').filter(line => line.trim());
         
         for (const line of lines) {
           try {
             const jsonResponse = JSON.parse(line) as OllamaResponse;
             if (jsonResponse.response) {
               fullResponseText += jsonResponse.response;
+              onUpdate(fullResponseText, jsonResponse.done, false);
             }
           } catch (e) {
             this.log('Error parsing JSON line:', e);
           }
         }
-
-        if (!fullResponseText) {
-          throw new Error('No valid response text found in the API response');
+      } catch (error: any) {
+        if (error.name === 'AbortError' || cancelled) {
+          return { response: fullResponseText, fromCache: false };
         }
-
-        // Cache the response
-        this.cacheResponse(prompt, model, fullResponseText);
-        this.log(`Request completed in ${Date.now() - requestStartTime}ms. Response cached.`);
-        
-        // Clean up the active request
-        if (requestId) {
-          this.activeRequests.delete(requestId);
-        }
-        
-        return { response: fullResponseText, fromCache: false };
+        throw error;
       }
-    } catch (error: any) {
-      // Clean up the active request on error
-      if (requestId) {
-        this.activeRequests.delete(requestId);
-      }
-      
-      if (error.name === 'AbortError') {
-        this.log('Request was cancelled');
-        return { response: '[Request cancelled by user]', fromCache: false };
-      }
-      
-      this.log('API request failed:', error);
-      throw new Error(`Failed to get response from Ollama API: ${error}`);
     }
+    
+    return { response: fullResponseText, fromCache: false };
+  }
+
+  /**
+   * Handle non-streaming request to Ollama
+   */
+  private async handleNonStreamingRequest(
+    fullUrl: string,
+    requestBody: any,
+    controller: AbortController,
+    requestId: string | undefined,
+    prompt: string,
+    model: string
+  ): Promise<{ response: string, fromCache: boolean }> {
+    const response = await fetch(fullUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(requestBody),
+      signal: controller.signal
+    });
+
+    if (!response.ok) {
+      throw new OllamaError(`HTTP error! Status: ${response.status}`);
+    }
+
+    const responseText = await response.text();
+    const lines = responseText.trim().split('\n');
+    let fullResponseText = '';
+    
+    for (const line of lines) {
+      try {
+        const jsonResponse = JSON.parse(line) as OllamaResponse;
+        if (jsonResponse.response) {
+          fullResponseText += jsonResponse.response;
+        }
+      } catch (e) {
+        this.log('Error parsing JSON line:', e);
+      }
+    }
+
+    if (!fullResponseText) {
+      throw new OllamaError('No valid response text found in the API response');
+    }
+
+    this.cacheResponse(prompt, model, fullResponseText);
+    
+    if (requestId) {
+      this.activeRequests.delete(requestId);
+    }
+    
+    return { response: fullResponseText, fromCache: false };
   }
 
   /**
