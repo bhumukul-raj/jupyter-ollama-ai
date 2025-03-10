@@ -51,6 +51,21 @@ jobs:
     - name: Check build artifacts
       run: |
         ls -la ollama_jupyter_ai/static/
+        if [ -d "ollama_jupyter_ai/static/static" ]; then
+            ls -la ollama_jupyter_ai/static/static/
+        fi
+        
+    - name: Generate CI-specific version
+      run: |
+        # Create a unique version suffix based on run id
+        CI_VERSION="1.0.0.ci${{ github.run_id }}"
+        
+        # Update version in pyproject.toml, package.json and __init__.py
+        sed -i "s/version = \"[0-9]*\.[0-9]*\.[0-9]*\"/version = \"${CI_VERSION}\"/" pyproject.toml
+        sed -i "s/\"version\": \"[0-9]*\.[0-9]*\.[0-9]*\"/\"version\": \"${CI_VERSION}\"/" package.json
+        sed -i "s/__version__ = \"[0-9]*\.[0-9]*\.[0-9]*\"/__version__ = \"${CI_VERSION}\"/" ollama_jupyter_ai/__init__.py
+        
+        echo "Created CI version: ${CI_VERSION}"
         
     - name: Build Python package
       run: |
