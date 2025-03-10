@@ -15,7 +15,7 @@ npm = ["jlpm"]
 
 # Add data-files section for labextension installation
 [tool.jupyter-packaging.data-files]
-"share/jupyter/labextensions/ollama-jupyter-ai" = [
+"share/jupyter/labextensions/bhumukul-ollama-jupyter-ai" = [
     "ollama_jupyter_ai/static/**/*",
     "install.json"
 ]

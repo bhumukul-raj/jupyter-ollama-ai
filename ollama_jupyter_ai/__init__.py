@@ -37,30 +37,18 @@ def _jupyter_labextension_paths():
     Returns a list of dictionaries with metadata about the labextension.
     This function is critical for extension discovery.
     """
-    logger.debug("Loading extension paths for ollama-jupyter-ai")
+    logger.debug("Loading extension paths for bhumukul-ollama-jupyter-ai")
     
-    # Check if the static directory exists
-    static_dir = osp.join(HERE, 'static')
-    if not osp.exists(static_dir):
-        logger.warning(f"Static directory not found: {static_dir}")
-        # Let's check if we have files inside the directory
-        try:
-            os.makedirs(static_dir, exist_ok=True)
-            logger.debug(f"Created static directory: {static_dir}")
-        except Exception as e:
-            logger.error(f"Error creating static directory: {e}")
+    static_path = os.path.join(os.path.dirname(__file__), "static")
     
-    # Check what files are in the static directory
-    if osp.exists(static_dir):
-        try:
-            files = os.listdir(static_dir)
-            logger.debug(f"Files in static directory: {files}")
-        except Exception as e:
-            logger.error(f"Error listing files in static directory: {e}")
-            files = []
+    # Debug: log the contents of the static directory
+    if os.path.exists(static_path):
+        files = os.listdir(static_path)
+        logger.debug(f"Files in static directory: {files}")
+    else:
+        logger.debug(f"Static directory not found at {static_path}")
     
-    # This is the critical path information that JupyterLab uses to find your extension
     return [{
-        'src': 'static',  # Source directory relative to the ollama_jupyter_ai package
-        'dest': 'ollama-jupyter-ai'  # Extension name as defined in package.json's name field
+        "name": "bhumukul-ollama-jupyter-ai",
+        "path": os.path.join(os.path.dirname(__file__), "static"),
     }] 

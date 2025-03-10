@@ -1,6 +1,6 @@
 {
-  "packageName": "ollama_jupyter_ai",
+  "packageName": "bhumukul-ollama-jupyter-ai",
   "packageManager": "python",
   "uninstallInstructions": "Use your Python package manager (pip) to uninstall the package.",
-  "extension": "ollama-jupyter-ai"
+  "extension": "bhumukul-ollama-jupyter-ai"
 }
