@@ -87,7 +87,7 @@ After installing the extension, you need to install and start Ollama:
 
 ```bash
 # Install Ollama (visit https://ollama.ai for installation instructions)
-# Pull a compatible model (like mistral)
+# Pull a compatible model (like mistral )
 ollama pull mistral
 
 # Start the Ollama service
