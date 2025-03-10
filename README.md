@@ -58,7 +58,7 @@ A powerful AI-powered assistant extension for JupyterLab that uses Ollama for lo
 
 - JupyterLab >= 4.0.0
 - Python >= 3.8
-- Ollama (for local AI processing)
+- Ollama (for local AI Processing)
 
 ## Installation
 
