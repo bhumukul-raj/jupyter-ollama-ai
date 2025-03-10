@@ -18,6 +18,9 @@
   "author": {
     "name": "Bhumukul Raj"
   },
+  "engines": {
+    "node": ">=20.0.0"
+  },
   "files": [
     "ollama_jupyter_ai/labextension/lib/**/*.{d.ts,eot,gif,html,jpg,js,js.map,json,png,svg,woff2,ttf}",
     "ollama_jupyter_ai/labextension/style/**/*.{css,js,eot,gif,html,jpg,json,png,svg,woff2,ttf}"

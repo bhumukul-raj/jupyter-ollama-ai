@@ -157,7 +157,7 @@ The extension uses several Node.js packages that are specified in the `package.j
 
 1. **System Prerequisites**:
    - Python 3.8 or later
-   - Node.js 18 or later
+   - Node.js 20 or later
    - npm or yarn
 
 2. **Clone the Repository**:
