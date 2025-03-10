@@ -36,8 +36,9 @@ jobs:
         
     - name: Lint with ESLint
       run: |
-        yarn add eslint @typescript-eslint/eslint-plugin @typescript-eslint/parser --dev
-        yarn eslint ollama_jupyter_ai/labextension/src/**/*.{ts,tsx} --max-warnings=0
+        yarn add eslint@8.55.0 @typescript-eslint/eslint-plugin@6.14.0 @typescript-eslint/parser@6.14.0 --dev --exact
+        # List TypeScript files explicitly to avoid glob issues
+        yarn eslint ollama_jupyter_ai/labextension/src/components/*.tsx ollama_jupyter_ai/labextension/src/context/*.tsx ollama_jupyter_ai/labextension/src/hooks/*.ts ollama_jupyter_ai/labextension/src/services/*.ts ollama_jupyter_ai/labextension/src/utils/*.tsx --max-warnings=0
         
     - name: Type check with TypeScript
       run: |

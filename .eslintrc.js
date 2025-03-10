@@ -8,7 +8,8 @@ module.exports = {
   parser: '@typescript-eslint/parser',
   parserOptions: {
     project: 'ollama_jupyter_ai/labextension/tsconfig.json',
-    sourceType: 'module'
+    sourceType: 'module',
+    ecmaVersion: 2020
   },
   plugins: ['@typescript-eslint'],
   rules: {
@@ -24,5 +25,5 @@ module.exports = {
     ],
     'no-console': ['warn', { allow: ['warn', 'error'] }]
   },
-  ignorePatterns: ['node_modules', 'lib', '*.js']
+  ignorePatterns: ['node_modules', 'lib', 'dist', '*.js', 'ollama_jupyter_ai/static']
 }; 
