@@ -4,7 +4,7 @@
 set +e
 
 echo "===== Uninstalling JupyterLab ====="
-pip uninstall -y jupyterlab IPython ipykernel ipywidgets jupyter_client jupyter_core jupyter_server  nbclient nbconvert nbformat notebook qtconsole notebook-shim || echo "Uninstall failed, but continuing..."
+pip uninstall -y jupyterlab || echo "Uninstall failed, but continuing..."
 
 echo "===== Removing JupyterLab data directories ====="
 # Remove JupyterLab configuration directories
@@ -17,7 +17,7 @@ rm -rf ~/Desktop/ollama-ai-assistant-project/venv/share/jupyter/lab || echo "Fai
 rm -rf ~/Desktop/ollama-ai-assistant-project/venv/share/jupyter/labextensions || echo "Failed to remove labextensions from venv, but continuing..."
 
 echo "===== Reinstalling JupyterLab ====="
-pip install jupyterlab IPython ipykernel ipywidgets jupyter_client jupyter_core jupyter_server nbclient nbconvert nbformat notebook qtconsole notebook-shim
+pip install jupyterlab
 
 echo "===== Verifying JupyterLab installation... ====="
 jupyter --version || echo "Failed to get Jupyter version, but continuing..."
