@@ -21,7 +21,16 @@ The Publish workflow runs when a new GitHub release is created. It performs the 
 - Builds the extension
 - Creates Python distribution packages (wheel and source)
 - Publishes to Test PyPI for verification
-- Publishes to PyPI (only for tagged releases)
+- Publishes to PyPI (for tagged releases)
+
+## Notes on ESLint Configuration
+
+The ESLint configuration allows warnings in the CI/CD workflow to prevent build failures for non-critical issues like:
+- Interface naming conventions
+- Unused variables
+- Console statements in development code
+
+These warnings should be addressed in future code cleanup, but don't block the builds.
 
 ## Setting Up Secrets
 

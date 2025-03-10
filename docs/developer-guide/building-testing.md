@@ -46,19 +46,32 @@ You can test the extension manually by:
 To lint the TypeScript code:
 
 ```bash
-# Install ESLint if not already installed
-yarn add eslint @typescript-eslint/eslint-plugin @typescript-eslint/parser --dev
+# Run ESLint with auto-fixing
+yarn lint
 
-# Run ESLint
-yarn eslint ollama_jupyter_ai/labextension/src/**/*.{ts,tsx}
+# Run ESLint check (shows warnings but doesn't fail)
+yarn lint:check
+
+# Run strict ESLint check (fails on warnings)
+yarn lint:strict
 ```
+
+#### Linting Standards
+
+The project has ESLint configured with several rules:
+- TypeScript naming conventions (interfaces should have 'I' prefix)
+- No unused variables 
+- No explicit 'any' types
+- No console statements in production code
+
+For CI/CD purposes, these are treated as warnings rather than errors to avoid blocking builds. However, these should be addressed during development to maintain code quality.
 
 ### Type Checking
 
 To check the TypeScript types:
 
 ```bash
-yarn tsc --noEmit -p ollama_jupyter_ai/labextension/tsconfig.json
+yarn type-check
 ```
 
 ## CI/CD Pipeline

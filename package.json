@@ -45,6 +45,7 @@
     "install:extension": "yarn build",
     "lint": "eslint ollama_jupyter_ai/labextension/src/**/*.{ts,tsx} --fix",
     "lint:check": "eslint ollama_jupyter_ai/labextension/src/**/*.{ts,tsx}",
+    "lint:strict": "eslint ollama_jupyter_ai/labextension/src/**/*.{ts,tsx} --max-warnings=0",
     "type-check": "tsc --noEmit -p ollama_jupyter_ai/labextension/tsconfig.json",
     "test": "yarn lint:check && yarn type-check",
     "watch": "run-p watch:src watch:labextension",
