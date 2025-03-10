@@ -75,55 +75,10 @@ jobs:
           exit 1
         fi
         
-    - name: Create dev version for TestPyPI
-      if: github.event.release.prerelease
-      run: |
-        # Create a unique version suffix based on timestamp and run number
-        DEV_VERSION=$(date +"%Y%m%d%H%M%S")
-        
-        # Update version in pyproject.toml, package.json and __init__.py
-        sed -i "s/version = \"[0-9]*\.[0-9]*\.[0-9]*\"/version = \"1.0.0.dev${DEV_VERSION}\"/" pyproject.toml
-        sed -i "s/\"version\": \"[0-9]*\.[0-9]*\.[0-9]*\"/\"version\": \"1.0.0.dev${DEV_VERSION}\"/" package.json
-        sed -i "s/__version__ = \"[0-9]*\.[0-9]*\.[0-9]*\"/__version__ = \"1.0.0.dev${DEV_VERSION}\"/" ollama_jupyter_ai/__init__.py
-        
-        # Rebuild the package with the new version
-        python -m build
-        
-        echo "Created development version: 1.0.0.dev${DEV_VERSION}"
-        echo "Updated files:"
-        grep -n "version" pyproject.toml
-        grep -n "version" package.json
-        grep -n "__version__" ollama_jupyter_ai/__init__.py
-        
     - name: Publish to Test PyPI
       env:
         TWINE_USERNAME: ${{ secrets.TEST_PYPI_USERNAME }}
         TWINE_PASSWORD: ${{ secrets.TEST_PYPI_PASSWORD }}
       run: |
-<<<<<<< HEAD
-        twine upload --verbose --skip-existing --repository testpypi dist/*
-        
-=======
         twine upload --verbose --repository testpypi dist/*
         
-    - name: Publish to PyPI (Only for full releases)
-      if: "!github.event.release.prerelease"
-      env:
-        TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
-        TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
-      run: |
-        # Only upload the original version files, not the dev versions
-        if [ -f "dist/ollama_jupyter_ai-1.0.0.tar.gz" ]; then
-          twine upload --verbose dist/ollama_jupyter_ai-1.0.0*
-        else
-          # Find the correct version from pyproject.toml if not 1.0.0
-          VERSION=$(grep -oP 'version = "\K[0-9]+\.[0-9]+\.[0-9]+(?=")' pyproject.toml)
-          if [ -n "$VERSION" ]; then
-            twine upload --verbose dist/ollama_jupyter_ai-${VERSION}*
-          else
-            echo "Could not determine version to upload to PyPI"
-            exit 1
-          fi
-        fi
-        
->>>>>>> 307acc8 (update ci and publish workflows file for version generation)

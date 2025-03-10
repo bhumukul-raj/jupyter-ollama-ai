@@ -15,8 +15,8 @@ HERE = os.path.abspath(os.path.dirname(__file__))
 # The name of the project
 name = "ollama_jupyter_ai"
 
-# Set version explicitly to 1.0.0
-version = "1.0.0"
+# Set version explicitly to 1.0.1
+version = "1.0.1"
 
 # Set paths
 lab_path = os.path.join(HERE, name, "static")

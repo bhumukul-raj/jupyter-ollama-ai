@@ -29,8 +29,8 @@ except (FileNotFoundError, json.JSONDecodeError):
     logger.warning("Could not load package.json from labextension directory")
     data = {}
 
-# Set version explicitly to 1.0.0
-__version__ = "1.0.0"
+# Set version explicitly to 1.0.1
+__version__ = "1.0.1"
 
 def _jupyter_labextension_paths():
     """
