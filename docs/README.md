@@ -29,6 +29,14 @@ The Ollama JupyterLab AI Assistant is an extension for JupyterLab that integrate
 - **Session Management**: Save, export, and import conversations
 - **Code Execution**: Run generated code directly from the assistant
 
+## New Features & Improvements
+
+The extension has been enhanced with several new features:
+
+- **[Performance Optimizations](developer-guide/performance-optimizations.md)**: Improved responsiveness and efficiency
+- **[Error Handling & Recovery](developer-guide/error-handling.md)**: Better handling of connectivity issues
+- **[Enhanced User Experience](user-guide/enhanced-user-experience.md)**: Setup wizard, code previews, and more
+
 ## Quick Links
 
 - [Installation Guide](user-guide/installation.md)

@@ -13,6 +13,31 @@ This guide provides information for developers who want to understand, modify, o
 - [API Integration](api-integration.md): How the extension interacts with Ollama API
 - [Styling Guide](styling-guide.md): CSS architecture and styling approach
 - [Contributing](contributing.md): Guidelines for contributing to the project
+- [Performance Optimizations](performance-optimizations.md): Utilities for improving performance
+- [Error Handling & Recovery](error-handling.md): Robust error handling mechanisms
+
+## Recent Improvements
+
+The extension has been enhanced with several new features:
+
+1. **Performance Optimizations**: 
+   - Debouncing for API requests
+   - Batch processing for multiple operations
+   - Web Worker support for heavy computations
+   - Progressive loading for large datasets
+   
+2. **Error Handling & Recovery**:
+   - Connection health monitoring
+   - Automatic reconnection
+   - Detailed error diagnostics
+   - User-friendly recovery options
+   
+3. **User Experience Enhancements**:
+   - Setup wizard for first-time users
+   - Code preview with syntax highlighting
+   - Diff view for code changes
+   - Progress indicators for long operations
+   - Undo/redo functionality
 
 ## Tech Stack
 
