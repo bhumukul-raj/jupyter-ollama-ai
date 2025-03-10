@@ -37,7 +37,7 @@ def _jupyter_labextension_paths():
     Returns a list of dictionaries with metadata about the labextension.
     This function is critical for extension discovery.
     """
-    logger.debug("Loading extension paths for bhumukul-ollama-jupyter-ai")
+    logger.debug("Loading extension paths for ollama-jupyter-ai")
     
     static_path = os.path.join(os.path.dirname(__file__), "static")
     
@@ -49,6 +49,6 @@ def _jupyter_labextension_paths():
         logger.debug(f"Static directory not found at {static_path}")
     
     return [{
-        "name": "bhumukul-ollama-jupyter-ai",
+        "name": "ollama-jupyter-ai",
         "path": os.path.join(os.path.dirname(__file__), "static"),
     }] 

@@ -15,14 +15,14 @@ npm = ["jlpm"]
 
 # Add data-files section for labextension installation
 [tool.jupyter-packaging.data-files]
-"share/jupyter/labextensions/bhumukul-ollama-jupyter-ai" = [
+"share/jupyter/labextensions/ollama-jupyter-ai" = [
     "ollama_jupyter_ai/static/**/*",
     "install.json"
 ]
 
 # PyPI project metadata
 [project]
-name = "bhumukul-ollama-jupyter-ai"
+name = "ollama-jupyter-ai"
 version = "1.0.0.dev1"
 description = "AI-powered JupyterLab extension using Ollama for local LLM integration"
 readme = "README.md"
@@ -50,7 +50,7 @@ dependencies = [
 
 # Add entry points for automatic discovery
 [project.entry-points."jupyter_labextension"]
-"bhumukul-ollama-jupyter-ai" = "ollama_jupyter_ai:_jupyter_labextension_paths"
+"ollama-jupyter-ai" = "ollama_jupyter_ai:_jupyter_labextension_paths"
 
 [project.urls]
 Homepage = "https://github.com/bhumukul-raj/ollama-ai-assistant-project"

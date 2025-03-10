@@ -1,5 +1,5 @@
 {
-  "name": "bhumukul-ollama-jupyter-ai",
+  "name": "ollama-jupyter-ai",
   "version": "1.0.0.dev1",
   "description": "AI-powered JupyterLab extension using Ollama for local LLM integration",
   "keywords": [

@@ -15,7 +15,7 @@ This guide will walk you through the process of installing the Ollama JupyterLab
 The easiest way to install the extension is using pip:
 
 ```bash
-pip install bhumukul-ollama-jupyter-ai
+pip install ollama-jupyter-ai
 ```
 
 ### Method 2: Installing from TestPyPI
@@ -23,7 +23,7 @@ pip install bhumukul-ollama-jupyter-ai
 For the development version:
 
 ```bash
-pip install -i https://test.pypi.org/simple/ bhumukul-ollama-jupyter-ai
+pip install -i https://test.pypi.org/simple/ ollama-jupyter-ai
 ```
 
 ### Method 2: Installing from Source

@@ -29,6 +29,10 @@ jobs:
         grep -A 5 "name =" pyproject.toml
         echo "Package info in package.json:"
         grep -A 5 "\"name\":" package.json
+        echo "Content of install.json:"
+        cat install.json
+        echo "Python extension path function:"
+        grep -A 15 "_jupyter_labextension_paths" ollama_jupyter_ai/__init__.py
         
     - name: Install dependencies
       run: |
