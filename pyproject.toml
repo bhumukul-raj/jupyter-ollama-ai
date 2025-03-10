@@ -22,8 +22,8 @@ npm = ["jlpm"]
 
 # PyPI project metadata
 [project]
-name = "ollama-jupyter-ai"
-version = "1.0.0"
+name = "bhumukul-ollama-jupyter-ai"
+version = "1.0.0.dev1"
 description = "AI-powered JupyterLab extension using Ollama for local LLM integration"
 readme = "README.md"
 authors = [
@@ -50,7 +50,7 @@ dependencies = [
 
 # Add entry points for automatic discovery
 [project.entry-points."jupyter_labextension"]
-"ollama-jupyter-ai" = "ollama_jupyter_ai:_jupyter_labextension_paths"
+"bhumukul-ollama-jupyter-ai" = "ollama_jupyter_ai:_jupyter_labextension_paths"
 
 [project.urls]
 Homepage = "https://github.com/bhumukul-raj/ollama-ai-assistant-project"
