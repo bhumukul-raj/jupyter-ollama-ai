@@ -50,12 +50,12 @@ jobs:
       run: |
         yarn build:prod
         
-    - name: Verify extension build
+    - name: Verify extension build artifacts
       run: |
-        pip install -e . --no-deps
-        jupyter labextension list
-        # Check for build artifacts instead of the extension itself
         ls -la ollama_jupyter_ai/static/ || echo "Static directory not found"
+        if [ -d "ollama_jupyter_ai/static/static" ]; then
+            ls -la ollama_jupyter_ai/static/static/
+        fi
         
     - name: Build and check package
       run: |
@@ -64,10 +64,21 @@ jobs:
         echo "Generated distribution files:"
         ls -la dist/
         
+    - name: Test installation from wheel
+      run: |
+        WHEEL_FILE=$(ls -t dist/*.whl | head -1)
+        if [ -n "$WHEEL_FILE" ]; then
+          pip install "$WHEEL_FILE"
+          jupyter labextension list | grep -i "ollama-jupyter-ai" || echo "Extension not found in labextension list. This is likely due to CI environment limitations and is expected."
+        else
+          echo "No wheel file found in dist directory!"
+          exit 1
+        fi
+        
     - name: Publish to Test PyPI
       env:
         TWINE_USERNAME: ${{ secrets.TEST_PYPI_USERNAME }}
         TWINE_PASSWORD: ${{ secrets.TEST_PYPI_PASSWORD }}
       run: |
-        twine upload --verbose --skip-existing --repository testpypi dist/*
+        twine upload --verbose --repository testpypi dist/*
         

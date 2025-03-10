@@ -51,4 +51,6 @@ def _jupyter_labextension_paths():
     return [{
         "name": "ollama-jupyter-ai",
         "path": os.path.join(os.path.dirname(__file__), "static"),
+        "src": ".",
+        "dest": "ollama-jupyter-ai"
     }] 

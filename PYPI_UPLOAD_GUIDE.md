@@ -26,6 +26,10 @@ python -m build
 
 This will create a `dist/` directory containing your package distributions (`.tar.gz` and `.whl` files).
 
+    NOTE: # Install the package locally
+    ```bash 
+    pip install ./dist/ollama_jupyter_ai-1.0.0-py3-none-any.whl 
+    ```
 ## Step 3: Test Your Package Locally
 
 ```bash

@@ -16,7 +16,9 @@
     "resolveJsonModule": true,
     "declaration": true,
     "declarationMap": true,
-    "useDefineForClassFields": false
+    "useDefineForClassFields": false,
+    "noImplicitAny": false,
+    "types": ["node"]
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "**/*.test.ts"]

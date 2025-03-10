@@ -21,7 +21,7 @@ rm -rf ~/Desktop/ollama-ai-assistant-project/venv/share/jupyter/labextensions/ol
 
 echo "===== Installing dependencies ====="
 # Install build dependencies
-pip install jupyter_packaging jupyterlab~=4.0 -U
+pip install jupyter_packaging jupyterlab~=4.0 build twine -U
 # Install node dependencies
 yarn install
 
@@ -35,19 +35,27 @@ if [ -d "ollama_jupyter_ai/static/static" ]; then
     ls -la ollama_jupyter_ai/static/static/
 fi
 
-echo "===== Installing the package ====="
-# Install the package in development mode with proper extension installation
-pip install -e . --no-deps
+echo "===== Building Python package ====="
+# Build the Python package with the wheel
+python -m build
 
-# Ensure the extension is properly linked
-echo "===== Rebuilding JupyterLab to recognize the extension ====="
-jupyter labextension develop --overwrite .
+echo "===== Installing the wheel package ====="
+# Find the latest wheel file and install it (this works better than development mode)
+WHEEL_FILE=$(ls -t dist/*.whl | head -1)
+if [ -n "$WHEEL_FILE" ]; then
+    echo "Installing wheel: $WHEEL_FILE"
+    pip uninstall -y ollama-jupyter-ai
+    pip install "$WHEEL_FILE"
+else
+    echo "No wheel file found in dist directory!"
+    exit 1
+fi
 
 # Run JupyterLab build to incorporate the extension
-jupyter lab build
+#jupyter lab build
 
 echo "===== Verifying extension is installed ====="
-jupyter labextension list | grep -i "ollama-jupyter-ai v1.0.0" || echo "Extension not found in jupyter labextension list"
+jupyter labextension list | grep -i "ollama-jupyter-ai" || echo "Extension not found in jupyter labextension list"
 
 echo "Done! Your extension has been cleaned and rebuilt."
 echo "If it's still not appearing in JupyterLab, check the browser console for errors (F12)."

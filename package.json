@@ -1,6 +1,6 @@
 {
   "name": "ollama-jupyter-ai",
-  "version": "1.0.0.dev1",
+  "version": "1.0.0",
   "description": "AI-powered JupyterLab extension using Ollama for local LLM integration",
   "keywords": [
     "jupyter",
@@ -85,6 +85,16 @@
   "jupyterlab": {
     "extension": true,
     "outputDir": "ollama_jupyter_ai/static",
+    "discovery": {
+      "server": {
+        "managers": [
+          "pip"
+        ],
+        "base": {
+          "name": "ollama-jupyter-ai"
+        }
+      }
+    },
     "sharedPackages": {
       "react": {
         "bundled": false,

@@ -3,27 +3,8 @@
 # Don't exit on error - safer for interactive environment
 set +e
 
-echo "===== Creating backup directory ====="
-BACKUP_DIR=~/jupyterlab_backup_$(date +%Y%m%d_%H%M%S)
-mkdir -p $BACKUP_DIR
-echo "Backup directory created at: $BACKUP_DIR"
-
-echo "===== Backing up important configuration files ====="
-# Backup jupyter config
-if [ -d ~/.jupyter ]; then
-    cp -r ~/.jupyter $BACKUP_DIR/
-    echo "Backed up ~/.jupyter"
-fi
-
-echo "===== IMPORTANT: This script will not kill existing Jupyter processes ====="
-echo "If you're running this from within JupyterLab or a related environment,"
-echo "you should restart your terminal after this script completes."
-echo ""
-echo "Press Enter to continue..."
-read
-
 echo "===== Uninstalling JupyterLab ====="
-pip uninstall -y jupyterlab jupyterlab-server notebook-shim || echo "Uninstall failed, but continuing..."
+pip uninstall -y jupyterlab IPython ipykernel ipywidgets jupyter_client jupyter_core jupyter_server  nbclient nbconvert nbformat notebook qtconsole notebook-shim || echo "Uninstall failed, but continuing..."
 
 echo "===== Removing JupyterLab data directories ====="
 # Remove JupyterLab configuration directories
@@ -36,24 +17,11 @@ rm -rf ~/Desktop/ollama-ai-assistant-project/venv/share/jupyter/lab || echo "Fai
 rm -rf ~/Desktop/ollama-ai-assistant-project/venv/share/jupyter/labextensions || echo "Failed to remove labextensions from venv, but continuing..."
 
 echo "===== Reinstalling JupyterLab ====="
-pip install jupyterlab==4.3.5
+pip install jupyterlab IPython ipykernel ipywidgets jupyter_client jupyter_core jupyter_server nbclient nbconvert nbformat notebook qtconsole notebook-shim
 
-echo "===== Verifying JupyterLab installation ====="
+echo "===== Verifying JupyterLab installation... ====="
 jupyter --version || echo "Failed to get Jupyter version, but continuing..."
 jupyter lab --version || echo "Failed to get JupyterLab version, but continuing..."
 
-echo "===== Reinstall Ollama JupyterLab extension? ====="
-read -p "Do you want to reinstall the Ollama JupyterLab extension? (y/n): " choice
-if [[ "$choice" =~ ^[Yy]$ ]]; then
-    echo "===== Running clean_rebuild.sh to reinstall the extension ====="
-    bash ./clean_rebuild.sh || echo "Extension installation failed, but script completed"
-else
-    echo "Skipping Ollama JupyterLab extension installation"
-fi
-
 echo "===== Complete! ====="
-echo "JupyterLab has been reinstalled."
-echo "Your previous configuration was backed up to: $BACKUP_DIR"
-echo ""
-echo "IMPORTANT: You should restart your terminal session now."
-echo "To start JupyterLab after restarting terminal, run: jupyter lab" 
+echo "JupyterLab has been reinstalled." 

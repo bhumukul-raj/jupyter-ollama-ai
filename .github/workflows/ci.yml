@@ -31,7 +31,7 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install jupyter_packaging jupyterlab~=4.0 -U
+        pip install jupyter_packaging jupyterlab~=4.0 build twine -U
         yarn install
         
     - name: Lint with ESLint
@@ -52,9 +52,19 @@ jobs:
       run: |
         ls -la ollama_jupyter_ai/static/
         
-    - name: Install package
+    - name: Build Python package
       run: |
-        pip install -e . --no-deps
+        python -m build
+        
+    - name: Install wheel package
+      run: |
+        WHEEL_FILE=$(ls -t dist/*.whl | head -1)
+        if [ -n "$WHEEL_FILE" ]; then
+          pip install "$WHEEL_FILE"
+        else
+          echo "No wheel file found in dist directory!"
+          exit 1
+        fi
         
     - name: Verify extension installation
       run: |
