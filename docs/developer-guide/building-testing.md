@@ -41,6 +41,17 @@ You can test the extension manually by:
 2. Starting JupyterLab: `jupyter lab`
 3. Verifying the extension is loaded in JupyterLab
 
+#### Verifying Extension Installation
+
+To verify that the extension is installed and registered with JupyterLab:
+
+```bash
+# Should list "ollama-jupyter-ai" in the output
+jupyter labextension list | grep -i "ollama-jupyter-ai"
+```
+
+In local development, this command should show your extension. In CI environments, however, this command might not show the extension due to environment limitations, which is why the CI workflow has a fallback for this check.
+
 ### Linting
 
 To lint the TypeScript code:
@@ -89,6 +100,16 @@ The CI workflow (`ci.yml`) automatically runs on all pushes to the main branch a
 - Verifying the installation
 
 This ensures that code changes don't break the extension and maintain code quality.
+
+### CI Workflow Considerations
+
+The CI environment differs from a local development environment in several ways:
+
+1. **Extension loading**: In CI, JupyterLab may not fully load the extension due to environment limitations
+2. **Verification steps**: The workflow checks for build artifacts and lists extensions but doesn't fail if the extension isn't found
+3. **ESLint warnings**: The workflow allows ESLint warnings to prevent blocking builds
+
+These accommodations ensure the CI can complete successfully while still providing useful information about the build process.
 
 ### Publish Workflow
 

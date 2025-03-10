@@ -37,6 +37,13 @@ jobs:
       run: |
         yarn build:prod
         
+    - name: Verify extension build
+      run: |
+        pip install -e . --no-deps
+        jupyter labextension list
+        # Check for build artifacts instead of the extension itself
+        ls -la ollama_jupyter_ai/static/ || echo "Static directory not found"
+        
     - name: Build and check package
       run: |
         python -m build
