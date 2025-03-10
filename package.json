@@ -40,6 +40,10 @@
     "clean:labextension": "rimraf ollama_jupyter_ai/static",
     "clean:all": "yarn clean:lib && yarn clean:labextension",
     "install:extension": "yarn build",
+    "lint": "eslint ollama_jupyter_ai/labextension/src/**/*.{ts,tsx} --fix",
+    "lint:check": "eslint ollama_jupyter_ai/labextension/src/**/*.{ts,tsx}",
+    "type-check": "tsc --noEmit -p ollama_jupyter_ai/labextension/tsconfig.json",
+    "test": "yarn lint:check && yarn type-check",
     "watch": "run-p watch:src watch:labextension",
     "watch:src": "tsc -w -p ollama_jupyter_ai/labextension/tsconfig.json",
     "watch:labextension": "jupyter labextension watch .",
@@ -66,6 +70,7 @@
     "@types/react-dom": "^18.2.17",
     "@typescript-eslint/eslint-plugin": "^6.14.0",
     "@typescript-eslint/parser": "^6.14.0",
+    "eslint": "^8.55.0",
     "npm-run-all": "^4.1.5",
     "rimraf": "^6.0.1",
     "typescript": "^5.2.2"
