@@ -1,6 +1,0 @@
-{
-  "packageName": "ollama-jupyter-ai",
-  "packageManager": "python",
-  "uninstallInstructions": "Use your Python package manager (pip) to uninstall the package.",
-  "extension": "ollama-jupyter-ai"
-}

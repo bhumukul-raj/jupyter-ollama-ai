@@ -1,5 +1,0 @@
-node_modules/
-dist/
-lib/
-ollama_jupyter_ai/static/
-*.d.ts 
