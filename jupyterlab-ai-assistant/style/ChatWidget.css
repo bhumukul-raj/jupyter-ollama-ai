@@ -1,0 +1,516 @@
+/* Chat Widget Base Styles */
+.jp-AI-ChatWidget {
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  font-family: var(--jp-ui-font-family);
+  background-color: var(--jp-layout-color1);
+}
+
+.chat-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  max-width: 100%;
+  background-color: var(--jp-layout-color1);
+}
+
+/* Header Styles */
+.chat-header {
+  background-color: var(--jp-layout-color2);
+  border-bottom: 1px solid var(--jp-border-color2);
+}
+
+.chat-header h3 {
+  color: var(--jp-ui-font-color1);
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+/* Context Section */
+.context-section {
+  background-color: var(--jp-layout-color2);
+}
+
+.context-code {
+  background-color: var(--jp-layout-color3);
+  font-family: var(--jp-code-font-family);
+  font-size: var(--jp-code-font-size);
+  color: var(--jp-content-font-color1);
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+/* Messages Container */
+.messages-container {
+  flex: 1;
+  overflow-y: auto;
+  background-color: var(--jp-layout-color1);
+}
+
+.messages-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* Message Styles */
+.message-wrapper {
+  max-width: 85%;
+  margin: 0.5rem 0;
+}
+
+@media (max-width: 768px) {
+  .message-wrapper {
+    max-width: 90%;
+  }
+}
+
+.message-bubble {
+  background-color: var(--jp-layout-color2);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.user-message .message-bubble {
+  background-color: var(--jp-brand-color1);
+  color: white;
+}
+
+.assistant-message .message-bubble {
+  background-color: var(--jp-layout-color2);
+  color: var(--jp-content-font-color1);
+}
+
+/* Code Block Styles */
+.code-block-wrapper {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.code-block-wrapper pre {
+  margin: 0;
+  font-family: var(--jp-code-font-family);
+  font-size: var(--jp-code-font-size);
+}
+
+.dark-theme .code-block-wrapper pre.bg-dark {
+  background-color: #1e1e1e !important;
+  color: #d4d4d4;
+}
+
+.light-theme .code-block-wrapper pre.bg-light {
+  background-color: #f8f9fa !important;
+  color: #212529;
+}
+
+/* Input Section */
+.input-section {
+  background-color: var(--jp-layout-color2);
+  border-top: 1px solid var(--jp-border-color2);
+}
+
+.input-section textarea {
+  background-color: var(--jp-layout-color1);
+  color: var(--jp-content-font-color1);
+  border: 1px solid var(--jp-border-color1);
+  font-family: var(--jp-ui-font-family);
+  font-size: 0.9rem;
+  resize: none;
+}
+
+.input-section textarea:focus {
+  border-color: var(--jp-brand-color1);
+  box-shadow: 0 0 0 0.2rem rgba(var(--jp-brand-color1), 0.25);
+}
+
+.input-section button {
+  height: 100%;
+  min-height: 38px;
+}
+
+/* Model Selector */
+.model-selector {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.model-selector label {
+  color: var(--jp-ui-font-color1);
+  margin-bottom: 0;
+  white-space: nowrap;
+}
+
+.model-select {
+  background-color: var(--jp-layout-color1);
+  color: var(--jp-content-font-color1);
+  border: 1px solid var(--jp-border-color1);
+  border-radius: 4px;
+  padding: 0.375rem 0.75rem;
+  font-size: 0.9rem;
+  max-width: 200px;
+}
+
+/* Responsive Design */
+@media (max-width: 576px) {
+  .chat-header {
+    padding: 0.5rem !important;
+  }
+
+  .chat-header h3 {
+    font-size: 0.9rem;
+  }
+
+  .model-selector {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+  }
+
+  .model-select {
+    width: 100%;
+    max-width: none;
+  }
+
+  .message-wrapper {
+    max-width: 95%;
+  }
+
+  .input-section {
+    padding: 0.5rem !important;
+  }
+
+  .input-section textarea {
+    font-size: 0.9rem;
+    min-height: 60px;
+  }
+}
+
+/* Dark Theme Adjustments */
+.dark-theme {
+  background-color: var(--jp-layout-color0);
+}
+
+.dark-theme .message-bubble {
+  background-color: var(--jp-layout-color2);
+}
+
+.dark-theme .user-message .message-bubble {
+  background-color: #2a66d9;
+}
+
+.dark-theme code {
+  background-color: var(--jp-layout-color3);
+}
+
+/* Light Theme Adjustments */
+.light-theme .message-bubble {
+  background-color: var(--jp-layout-color2);
+}
+
+.light-theme .user-message .message-bubble {
+  background-color: #4285f4;
+}
+
+.light-theme code {
+  background-color: var(--jp-layout-color3);
+}
+
+/* Cell Context Menu Styles */
+.cell-context-menu {
+  position: absolute;
+  z-index: 1000;
+  min-width: 600px;
+  max-width: 800px;
+  width: 70%;
+  max-height: 85vh;
+  border-radius: 10px;
+  background-color: var(--jp-layout-color1);
+  box-shadow: 0 1rem 3rem rgba(0, 0, 0, 0.3) !important;
+  border: 1px solid var(--jp-border-color1);
+  overflow: hidden;
+  transform: translateY(0) scale(1);
+  opacity: 0;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* Animation classes */
+.cell-context-menu.animate-in {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+.cell-context-menu.animate-out {
+  opacity: 0;
+  transform: translateY(10px) scale(0.95);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .cell-context-menu {
+    min-width: 400px;
+    width: 90%;
+    max-height: 90vh;
+  }
+}
+
+/* Make sure the card body can scroll if needed */
+.cell-context-menu .card-body {
+  max-height: 70vh;
+  overflow-y: auto;
+  padding: 1.5rem;
+}
+
+/* Enhance code blocks */
+.cell-context-menu pre {
+  background-color: var(--jp-layout-color2);
+  border-radius: 6px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  border: 1px solid var(--jp-border-color2);
+  font-size: 14px;
+  line-height: 1.5;
+  overflow-x: auto;
+  max-height: 250px;
+}
+
+/* Style inline code */
+.cell-context-menu code {
+  padding: 0.2em 0.4em;
+  border-radius: 3px;
+  font-size: 90%;
+}
+
+.cell-context-menu .card-header {
+  padding: 1rem 1.5rem;
+  border-bottom: 2px solid var(--jp-border-color2);
+  background-color: var(--jp-layout-color2);
+}
+
+/* Enhance alert styling */
+.cell-context-menu .alert {
+  border-radius: 6px;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1.5rem;
+}
+
+/* Enhance result card */
+.cell-context-menu .result-card {
+  border: 1px solid var(--jp-brand-color1);
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  margin-top: 1.5rem;
+}
+
+.cell-context-menu .result-card .card-header {
+  background-color: rgba(var(--jp-brand-color1), 0.1);
+  border-bottom: 1px solid var(--jp-brand-color1);
+  padding: 0.75rem 1.25rem;
+}
+
+.cell-context-menu .response-content {
+  padding: 1.25rem;
+  line-height: 1.6;
+  font-size: 15px;
+}
+
+/* Better typography */
+.cell-context-menu .card-body p {
+  margin-bottom: 1rem;
+  line-height: 1.6;
+}
+
+.cell-context-menu .badge {
+  font-size: 85%;
+  padding: 0.35em 0.65em;
+  font-weight: 600;
+}
+
+/* For dark themes */
+body[data-jp-theme-light="false"] .cell-context-menu .bg-light {
+  background-color: var(--jp-layout-color2) !important;
+}
+
+body[data-jp-theme-light="false"] .cell-context-menu .text-muted {
+  color: var(--jp-ui-font-color2) !important;
+}
+
+/* Additional Bootstrap enhancements */
+.cell-context-menu .btn-close {
+  padding: 0.5rem;
+  margin: -0.5rem -0.5rem -0.5rem auto;
+}
+
+.cell-context-menu .code-block-wrapper pre.bg-light {
+  background-color: var(--jp-layout-color2) !important;
+}
+
+/* Ensure table styling is nice in markdown */
+.cell-context-menu table {
+  width: 100%;
+  margin-bottom: 1rem;
+  border-collapse: collapse;
+}
+
+.cell-context-menu table th,
+.cell-context-menu table td {
+  padding: 0.5rem;
+  border: 1px solid var(--jp-border-color2);
+}
+
+.cell-context-menu table th {
+  background-color: var(--jp-layout-color2);
+  font-weight: bold;
+}
+
+/* Nice transitions for interactive elements */
+.cell-context-menu .btn,
+.cell-context-menu .alert,
+.cell-context-menu .badge {
+  transition: all 0.2s ease-in-out;
+}
+
+/* Add styles for dashed border placeholder */
+.border-dashed {
+  border: 2px dashed var(--jp-border-color2) !important;
+  background-color: var(--jp-layout-color0) !important;
+}
+
+/* Style the action buttons */
+.cell-context-menu .btn.btn-action {
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  border: none;
+  margin: 0.25rem;
+  transition: all 0.3s ease;
+  animation: fadeInUp 0.5s ease forwards;
+  opacity: 0;
+  transform: translateY(10px);
+}
+
+.cell-context-menu .btn.btn-action:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+}
+
+.cell-context-menu .btn.btn-action:active {
+  transform: translateY(0) !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Button hover effects */
+.cell-context-menu .btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Add styling for code blocks within markdown responses */
+.code-block-wrapper {
+  background-color: var(--jp-layout-color2);
+  border-radius: 8px;
+  margin: 1rem 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.code-block-wrapper pre {
+  margin: 0;
+  padding: 1rem;
+  overflow-x: auto;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  background-color: var(--jp-layout-color2);
+  border-radius: 8px;
+}
+
+/* Code section in the dialog */
+.code-section pre {
+  max-height: 200px;
+  font-size: 0.85rem;
+  background-color: var(--jp-layout-color0);
+  border: 1px solid var(--jp-border-color1);
+  margin: 0;
+  border-radius: 0 0 8px 8px !important;
+}
+
+/* Result card styling */
+.result-card {
+  transition: all 0.3s ease;
+  animation: fadeInUp 0.5s ease;
+}
+
+/* Enhanced spinner styles */
+.spinner-grow {
+  opacity: 0.7;
+}
+
+/* Ensure proper light/dark theme adaptation */
+body[data-jp-theme-light="true"] .cell-context-menu .card-body {
+  color: var(--jp-ui-font-color1);
+}
+
+body[data-jp-theme-light="false"] .cell-context-menu .card-body {
+  color: var(--jp-ui-font-color1);
+}
+
+body[data-jp-theme-light="false"] .cell-context-menu .bg-light {
+  background-color: var(--jp-layout-color2) !important;
+}
+
+body[data-jp-theme-light="false"] .cell-context-menu .text-muted {
+  color: var(--jp-ui-font-color3) !important;
+}
+
+body[data-jp-theme-light="false"] .cell-context-menu code.bg-light {
+  background-color: var(--jp-layout-color3) !important;
+}
+
+/* Animations */
+@keyframes fadeInScale {
+  from { 
+    opacity: 0; 
+    transform: scale(0.95);
+  }
+  to { 
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Card header styling */
+.cell-context-menu .card-header {
+  padding: 0.75rem 1rem;
+  font-weight: bold;
+}
+
+/* Card body enhanced spacing */
+.cell-context-menu .card-body {
+  padding: 1.25rem;
+}
+
+/* Improved alert styling */
+.cell-context-menu .alert {
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+/* Improved code styling */
+.cell-context-menu pre,
+.cell-context-menu code {
+  border-radius: 6px;
+  font-family: 'JetBrains Mono', 'Fira Code', 'Source Code Pro', monospace, var(--jp-code-font-family);
+} 

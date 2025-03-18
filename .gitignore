@@ -1,0 +1,61 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+*.egg-info/
+.installed.cfg
+*.egg
+.ipynb_checkpoints
+*.ipynb_checkpoints
+venv/
+.venv/
+ENV/
+
+# TypeScript/JavaScript
+.yarn/
+node_modules/
+lib/
+tsconfig.tsbuildinfo
+*.tsbuildinfo
+*.js.map
+#*.d.ts
+jupyterlab-ai-assistant/jupyterlab_ai_assistant/labextension
+
+# JupyterLab
+labextension/
+*.bundle.*
+.jupyterlab-config
+
+# Editor directories and files
+.idea
+.vscode
+*.swp
+*.swo
+*~
+
+# OS specific files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Project specific
+jupyterlab-ai-assistant/jupyterlab_ai_assistant/static/
+cookies.txt 

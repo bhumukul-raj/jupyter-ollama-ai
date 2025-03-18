@@ -1,0 +1,165 @@
+/* JupyterLab AI Assistant Extension Styles */
+
+/* Base styles */
+.ai-assistant-widget {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  background-color: var(--jp-layout-color1);
+  color: var(--jp-content-font-color1);
+}
+
+/* Test Widget Styles */
+.jp-OllamaTestWidget {
+  padding: 16px;
+  overflow: auto;
+}
+
+.jp-OllamaTest h2 {
+  margin-top: 0;
+  font-size: var(--jp-ui-font-size2);
+}
+
+.jp-OllamaTest ul {
+  padding-left: 20px;
+}
+
+.jp-error {
+  color: var(--jp-error-color0);
+}
+
+/* Cell Toolbar Button Styles */
+.jp-AI-CellToolbarButton {
+  background-color: var(--jp-brand-color1);
+  color: white;
+  border: none;
+  border-radius: 3px;
+  padding: 2px 8px;
+  margin: 2px;
+  font-size: 12px;
+  cursor: pointer;
+  height: 24px;
+  line-height: 20px;
+  align-items: center;
+  display: inline-flex;
+}
+
+.jp-AI-CellToolbarButton:hover {
+  background-color: var(--jp-brand-color0);
+}
+
+/* Direct Action Button Styles */
+.jp-AI-ExplainButton {
+  background-color: #4285f4;
+  color: white;
+  border: none;
+  border-radius: 3px;
+  padding: 2px 8px;
+  margin: 2px;
+  font-size: 12px;
+  cursor: pointer;
+  height: 24px;
+  line-height: 20px;
+  align-items: center;
+  display: inline-flex;
+}
+
+.jp-AI-ExplainButton:hover {
+  background-color: #3b78e7;
+}
+
+.jp-AI-OptimizeButton {
+  background-color: #34a853;
+  color: white;
+  border: none;
+  border-radius: 3px;
+  padding: 2px 8px;
+  margin: 2px;
+  font-size: 12px;
+  cursor: pointer;
+  height: 24px;
+  line-height: 20px;
+  align-items: center;
+  display: inline-flex;
+}
+
+.jp-AI-OptimizeButton:hover {
+  background-color: #2d9447;
+}
+
+/* AI Analysis Dialog Styles */
+.ai-analysis-dialog {
+  min-width: 700px;
+  max-width: 900px;
+}
+
+.ai-analysis-container {
+  padding: 16px;
+  overflow-y: auto;
+  max-height: 70vh;
+}
+
+.ai-analysis-container .model-selector {
+  margin-bottom: 16px;
+}
+
+.ai-analysis-container .model-selector select {
+  height: 24px;
+  border: var(--jp-border-width) solid var(--jp-border-color1);
+  border-radius: var(--jp-border-radius);
+  background-color: var(--jp-layout-color1);
+  color: var(--jp-ui-font-color1);
+  padding: 0 8px;
+}
+
+.ai-analysis-container .question-display {
+  margin-bottom: 16px;
+  padding: 8px;
+  background-color: var(--jp-layout-color2);
+  border-radius: var(--jp-border-radius);
+}
+
+.ai-analysis-container .code-preview {
+  margin-bottom: 16px;
+}
+
+.ai-analysis-container .code-preview pre {
+  padding: 8px;
+  background-color: var(--jp-layout-color2);
+  border-radius: var(--jp-border-radius);
+  font-family: var(--jp-code-font-family);
+  font-size: var(--jp-code-font-size);
+  line-height: var(--jp-code-line-height);
+  white-space: pre-wrap;
+  overflow-x: auto;
+}
+
+.ai-analysis-container .response-container {
+  margin-top: 16px;
+}
+
+.ai-analysis-container .response-content {
+  padding: 8px;
+  background-color: var(--jp-layout-color1);
+  border: var(--jp-border-width) solid var(--jp-border-color2);
+  border-radius: var(--jp-border-radius);
+  white-space: pre-wrap;
+}
+
+.ai-analysis-container .loading {
+  color: var(--jp-ui-font-color2);
+  text-align: center;
+  padding: 16px;
+}
+
+.ai-analysis-container .error {
+  color: var(--jp-error-color1);
+  padding: 8px;
+  border: var(--jp-border-width) solid var(--jp-error-color2);
+  border-radius: var(--jp-border-radius);
+  background-color: var(--jp-error-color3);
+}
+
+/* Import ChatWidget styles */
+@import './ChatWidget.css'; 
