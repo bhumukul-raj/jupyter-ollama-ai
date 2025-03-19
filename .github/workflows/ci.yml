@@ -1,0 +1,66 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [3.7, 3.8, 3.9, "3.10"]
+        node-version: [16.x]
+
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+        
+    - name: Set up Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ matrix.node-version }}
+        
+    - name: Install Python dependencies
+      run: |
+        python -m pip install --upgrade pip setuptools wheel
+        python -m pip install "jupyterlab==3.6.3" "jupyter_server<2,>=1.6" jupyter_server_terminals
+        python -m pip install hatchling hatch-nodejs-version hatch-jupyter-builder jupyter_packaging~=0.10 build pip-tools
+        python -m pip install aiohttp requests
+        
+    - name: Install Node.js dependencies
+      working-directory: ./jupyterlab-ai-assistant
+      run: |
+        npm cache clean --force
+        npm install
+        
+    - name: Lint with eslint
+      working-directory: ./jupyterlab-ai-assistant
+      run: npm run eslint:check
+      
+    - name: Build extension
+      working-directory: ./jupyterlab-ai-assistant
+      run: |
+        # Build TypeScript code and extension
+        npm run build:prod
+        
+        # Build and install wheel
+        python -m build
+        python -m pip install dist/*.whl --force-reinstall
+        
+        # Run the custom command to copy assets to the right locations
+        python setup.py copy_assets
+        
+        # Verify installation
+        jupyter labextension list
+        
+    - name: Test import
+      run: |
+        # Validate the package can be imported
+        python -c "import jupyterlab_ai_assistant" 

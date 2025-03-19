@@ -1,0 +1,29 @@
+include tsconfig.json
+include package.json
+include LICENSE
+include README.md
+include pyproject.toml
+include jupyter-config/jupyter_server_config.d/jupyterlab_ai_assistant.json
+include jupyter-config/jupyter_notebook_config.d/jupyterlab_ai_assistant.json
+
+# Source files and directories
+graft src
+graft lib
+graft style
+graft schema
+
+# Include all labextension files
+graft jupyterlab_ai_assistant/labextension
+graft jupyterlab_ai_assistant/labextension/static
+
+# Include all remoteEntry files
+include jupyterlab_ai_assistant/labextension/static/remoteEntry.*.js
+include jupyterlab_ai_assistant/labextension/static/remoteEntry.js
+
+# Exclude patterns
+global-exclude *~
+global-exclude *.pyc
+global-exclude *.pyo
+global-exclude .git
+global-exclude .ipynb_checkpoints
+global-exclude __pycache__

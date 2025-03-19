@@ -36,7 +36,7 @@
       "type": "string",
       "title": "Default Ollama Model",
       "description": "The default Ollama model to use for AI assistance",
-      "default": "llama2"
+      "default": "llama3.1:8b"
     }
   },
   "additionalProperties": false

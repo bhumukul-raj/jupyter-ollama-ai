@@ -17,7 +17,8 @@ echo "Activating virtual environment..."
 source venv/bin/activate
 
 # Get the installed JupyterLab version
-JUPYTERLAB_VERSION=$(jupyter lab --version)
+#JUPYTERLAB_VERSION=$(jupyter lab --version)
+JUPYTERLAB_VERSION=3.6.3
 echo "Detected JupyterLab version: $JUPYTERLAB_VERSION"
 
 # Install matching dependencies
@@ -29,7 +30,9 @@ python3 -m pip install "jupyterlab==$JUPYTERLAB_VERSION" \
     "jupyter_packaging~=0.10,<2" \
     "jupyter-server" \
     "build" \
-    "pip-tools"
+    "pip-tools" \
+    "aiohttp" \
+    "requests"
 
 # Check if npm is installed
 if ! command -v npm &> /dev/null; then
@@ -82,6 +85,9 @@ echo "Listing JupyterLab extensions..."
 jupyter labextension list
 
 echo "Installation complete!"
+echo "now build wheel"
+python -m build
+
 echo "To use the extension:"
 echo "1. Activate the virtual environment: source venv/bin/activate"
 echo "2. Start JupyterLab: jupyter lab" 

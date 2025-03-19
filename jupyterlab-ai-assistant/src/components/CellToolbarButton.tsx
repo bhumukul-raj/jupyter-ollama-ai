@@ -210,8 +210,8 @@ const CellContextMenu: React.FC<CellContextMenuProps> = ({
   const cellType = getCellType();
 
   return (
-    <div className={`cell-context-menu card shadow-lg ${animationClass}`}>
-      <div className="card-header d-flex justify-content-between align-items-center py-3 px-4">
+    <div className={`cell-context-menu card shadow-lg ${animationClass} w-100 max-w-800px mx-auto`}>
+      <div className="card-header d-flex justify-content-between align-items-center py-3 px-4 border-bottom">
         <div>
           <h5 className="m-0 d-flex align-items-center fw-bold">
             {getDialogTitle()}
@@ -225,13 +225,13 @@ const CellContextMenu: React.FC<CellContextMenuProps> = ({
         />
       </div>
       
-      <div className="card-body">
+      <div className="card-body p-4">
         <div className="code-section mb-4">
           <h6 className="mb-3 fw-bold border-bottom pb-2">
             <i className="fa fa-code me-2"></i>
             Cell content ({cellType}):
           </h6>
-          <div className="bg-light rounded border mb-2">
+          <div className="bg-light rounded border p-3 mb-2 overflow-auto">
             {renderCodeBlock(cellContent, cellType === 'code' ? 'python' : 'markdown')}
           </div>
           <div className="d-flex justify-content-end">
@@ -242,7 +242,7 @@ const CellContextMenu: React.FC<CellContextMenuProps> = ({
         </div>
         
         {isLoading && (
-          <div className="alert alert-info d-flex align-items-center shadow-sm">
+          <div className="alert alert-info d-flex align-items-center shadow-sm mb-4">
             <div className="spinner-border spinner-border-sm me-3" role="status">
               <span className="visually-hidden">Loading...</span>
             </div>
@@ -254,16 +254,16 @@ const CellContextMenu: React.FC<CellContextMenuProps> = ({
         )}
         
         {error && (
-          <div className="alert alert-danger shadow-sm">
+          <div className="alert alert-danger shadow-sm mb-4">
             <h6 className="fw-bold alert-heading mb-2">Error encountered:</h6>
             <p className="mb-0">{error}</p>
           </div>
         )}
         
         {result && (
-          <div className="result-container mt-4">
-            <div className="card result-card">
-              <div className="card-header py-3 px-4">
+          <div className="result-container">
+            <div className="card result-card border-0 shadow-sm">
+              <div className="card-header bg-transparent py-3 px-4 border-bottom">
                 <div className="d-flex justify-content-between align-items-center">
                   <h6 className="m-0 fw-bold">
                     <i className="fa fa-robot me-2"></i>
@@ -276,7 +276,7 @@ const CellContextMenu: React.FC<CellContextMenuProps> = ({
                   )}
                 </div>
               </div>
-              <div className="card-body response-content px-4">
+              <div className="card-body response-content px-4 py-3">
                 <ReactMarkdown components={{
                   code({node, inline, className, children, ...props}) {
                     const match = /language-(\w+)/.exec(className || '');
@@ -285,7 +285,7 @@ const CellContextMenu: React.FC<CellContextMenuProps> = ({
                         <div className="d-flex justify-content-between align-items-center mb-1">
                           <small className="text-muted">{match[1]}</small>
                         </div>
-                        <pre className="bg-light p-3 rounded border shadow-sm">
+                        <pre className="bg-light p-3 rounded border shadow-sm overflow-auto">
                           <code className={className} {...props}>
                             {String(children).replace(/\n$/, '')}
                           </code>
@@ -297,10 +297,10 @@ const CellContextMenu: React.FC<CellContextMenuProps> = ({
                       </code>
                     );
                   },
-                  h1: ({node, ...props}) => <h1 className="border-bottom pb-2 mt-4 mb-3" {...props} />,
-                  h2: ({node, ...props}) => <h2 className="border-bottom pb-2 mt-4 mb-3" {...props} />,
-                  h3: ({node, ...props}) => <h3 className="mt-4 mb-3" {...props} />,
-                  table: ({node, ...props}) => <div className="table-responsive my-3"><table className="table table-bordered" {...props} /></div>,
+                  h1: ({node, ...props}) => <h1 className="border-bottom pb-2 mt-4 mb-3 fs-4" {...props} />,
+                  h2: ({node, ...props}) => <h2 className="border-bottom pb-2 mt-4 mb-3 fs-5" {...props} />,
+                  h3: ({node, ...props}) => <h3 className="mt-4 mb-3 fs-6" {...props} />,
+                  table: ({node, ...props}) => <div className="table-responsive my-3"><table className="table table-bordered table-sm" {...props} /></div>,
                   li: ({node, ...props}) => <li className="mb-1" {...props} />,
                   blockquote: ({node, ...props}) => <blockquote className="blockquote border-start border-3 ps-3 my-3 text-muted" {...props} />
                 }}>
