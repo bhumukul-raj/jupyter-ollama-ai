@@ -3,8 +3,14 @@ include package.json
 include LICENSE
 include README.md
 include pyproject.toml
+include setup.py
 include jupyter-config/jupyter_server_config.d/jupyterlab_ai_assistant.json
 include jupyter-config/jupyter_notebook_config.d/jupyterlab_ai_assistant.json
+
+# Python module files (including post-install script)
+recursive-include jupyterlab_ai_assistant *.py
+include jupyterlab_ai_assistant/_post_install.py
+include jupyterlab_ai_assistant/__init__.py
 
 # Source files and directories
 graft src
@@ -12,13 +18,22 @@ graft lib
 graft style
 graft schema
 
-# Include all labextension files
+# Include all labextension files with explicit patterns for critical components
 graft jupyterlab_ai_assistant/labextension
 graft jupyterlab_ai_assistant/labextension/static
 
-# Include all remoteEntry files
+# Schema directories and files
+recursive-include jupyterlab_ai_assistant/labextension/schemas *.json
+recursive-include schema *.json
+
+# Include all remoteEntry files explicitly
 include jupyterlab_ai_assistant/labextension/static/remoteEntry.*.js
 include jupyterlab_ai_assistant/labextension/static/remoteEntry.js
+include jupyterlab_ai_assistant/labextension/static/style.js
+include jupyterlab_ai_assistant/labextension/package.json
+
+# Explicitly include critical component files
+recursive-include jupyterlab_ai_assistant *.json
 
 # Exclude patterns
 global-exclude *~
@@ -27,3 +42,5 @@ global-exclude *.pyo
 global-exclude .git
 global-exclude .ipynb_checkpoints
 global-exclude __pycache__
+global-exclude node_modules
+global-exclude *.log

@@ -61,6 +61,8 @@ data_files_spec = [
     ("share/jupyter/labextensions/%s" % name, HERE, "install.json"),
     ("share/jupyter/lab/schemas/%s" % name, schema_path, "*.json"),
     ("share/jupyter/lab/schemas", schema_path, "plugin.json"),
+    # Add explicit entry for schemas/jupyterlab-ai-assistant directory
+    ("share/jupyter/lab/schemas/jupyterlab-ai-assistant", schema_path, "*.json"),
 ]
 
 class CopyAssetsCommand(Command):
@@ -313,6 +315,40 @@ long_description = ""
 with open(os.path.join(HERE, "README.md"), encoding="utf-8") as f:
     long_description = f.read()
 
+# Ensure post-installation scripts are run automatically
+def _post_install(dir):
+    # This function runs after package installation
+    # The dir parameter is the installation directory
+    from subprocess import check_call
+    check_call([sys.executable, '-m', 'jupyterlab_ai_assistant._post_install'])
+    return
+
+# Create a separate python module for post-install operations
+if not os.path.exists(os.path.join(HERE, name, '_post_install.py')):
+    os.makedirs(os.path.join(HERE, name), exist_ok=True)
+    with open(os.path.join(HERE, name, '_post_install.py'), 'w') as f:
+        f.write("""
+import os
+import sys
+import shutil
+import json
+from pathlib import Path
+
+def main():
+    # Get paths similar to what's in CopyAssetsCommand
+    home = os.path.expanduser("~")
+    venv = os.path.dirname(os.path.dirname(sys.executable))
+    
+    # Copy schema and static files as needed
+    # (Include the core logic from your CopyAssetsCommand here)
+    print("Running post-installation file copying")
+    
+    # Add your custom copy_assets logic here, but simplified for production
+
+if __name__ == "__main__":
+    main()
+""")
+
 setup_args = dict(
     name=name,
     version=version,
@@ -350,6 +386,12 @@ setup_args = dict(
     author="bhumukulraj",
     author_email="bhumukulraj@gmail.com",
     url="https://github.com/bhumukul-raj/ollama-ai-assistant-project",
+    # Add entry points for post-install script
+    entry_points={
+        'jupyter_packaging.post_install': [
+            'copy_assets = jupyterlab_ai_assistant._post_install:main',
+        ],
+    },
 )
 
 if __name__ == "__main__":
