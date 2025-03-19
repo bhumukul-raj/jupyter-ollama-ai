@@ -24,7 +24,7 @@ jupyter labextension uninstall jupyterlab-ai-assistant 2>/dev/null || true
 # Install JupyterLab and dependencies
 echo "Installing JupyterLab and dependencies..."
 pip install --upgrade pip setuptools wheel
-pip install "jupyterlab==3.6.3" "jupyter_server<2,>=1.6" "jupyter-client<8,>=5.3.4" jupyter_server_terminals
+pip install "jupyterlab==3.6.3" "jupyter_server>=1.6.0,<2.0.0" "jupyter-client>=7.4.4,<8.0.0" jupyter_server_terminals
 pip install hatchling hatch-nodejs-version hatch-jupyter-builder jupyter_packaging build pip-tools
 pip install aiohttp requests
 

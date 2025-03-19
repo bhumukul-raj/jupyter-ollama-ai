@@ -23,7 +23,7 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip setuptools wheel
-        python -m pip install "jupyterlab==3.6.3" "jupyter_server<2,>=1.6" jupyter_server_terminals
+        pip install "jupyterlab==3.6.3" "jupyter_server>=1.6.0,<2.0.0" "jupyter-client>=7.4.4,<8.0.0" jupyter_server_terminals
         python -m pip install hatchling hatch-nodejs-version hatch-jupyter-builder jupyter_packaging~=0.10 build pip-tools twine
         python -m pip install aiohttp requests
         cd jupyterlab-ai-assistant
@@ -38,9 +38,6 @@ jobs:
         
         # Build wheel
         python -m build
-        
-        # Run the custom command to copy assets to the right locations
-        python setup.py copy_assets
         
         # Validate wheel contents
         python -m pip install dist/*.whl --force-reinstall
