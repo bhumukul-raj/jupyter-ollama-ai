@@ -140,7 +140,7 @@ const CellContextMenu: React.FC<CellContextMenuProps> = ({
     }
   };
 
-  const renderCodeBlock = (code: string, language: string = '') => {
+  const renderCodeBlock = (code: string, language = '') => {
     return (
       <div className="code-block-wrapper mb-3">
         <pre className="p-3 rounded border bg-light code-block">
