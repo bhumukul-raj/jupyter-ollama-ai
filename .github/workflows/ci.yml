@@ -11,7 +11,9 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [3.7, 3.8, 3.9, "3.10"]
+        # 3.8 and 3.9 don't need quotes because they are valid YAML numbers (can be parsed as floats)
+        # 3.10 and 3.11 need quotes because they would be interpreted as invalid numbers (3.1 and 3.11)
+        python-version: [3.8, 3.9, "3.10", "3.11"]
         node-version: [16.x]
 
     steps:
