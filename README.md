@@ -2,6 +2,15 @@
 
 A comprehensive JupyterLab extension that integrates Ollama-powered AI assistance directly into notebooks with cell-specific context awareness and responsive design.
 
+## Project Overview
+
+This extension enhances JupyterLab with:
+
+1. **Ollama AI Integration**: Chat with locally installed Ollama AI models
+2. **Cell-Contextual AI Assistance**: Ask questions about specific notebook cells
+3. **Responsive Design**: Bootstrap-powered responsive interface
+4. **Theme-Aware UI**: Seamless integration with JupyterLab's light/dark themes
+
 ## Features
 
 - **Chat with Ollama Models**: Interact with locally-running Ollama AI models directly within JupyterLab
@@ -11,6 +20,8 @@ A comprehensive JupyterLab extension that integrates Ollama-powered AI assistanc
 - **Theme-Aware UI**: Seamless integration with JupyterLab's light/dark themes
 - **Multi-Model Support**: Use any Ollama model installed on your system
 - **Code Analysis**: Explain, optimize, or debug code directly from your notebooks
+- **Real-time Streaming**: View AI responses as they are generated
+- **Markdown Support**: Rich formatting in responses with code highlighting
 
 ## How It Works
 
@@ -21,17 +32,18 @@ The extension connects to your local Ollama service and provides two main intera
 
 ### Chat Widget
 
-![Chat Interface Screenshot](https://via.placeholder.com/800x400?text=Chat+Interface+Screenshot)
+![Chat Interface Screenshot](https://raw.githubusercontent.com/bhumukul-raj/ollama-ai-assistant-project/main/screenshots/chat-widget.png)
 
 The chat interface features:
 - Full markdown support including code blocks
 - Syntax highlighting for code
 - Model selection dropdown
 - Responsive design for all screen sizes
+- Real-time streaming of responses
 
 ### Cell Context Analysis
 
-![Cell Context Screenshot](https://via.placeholder.com/800x400?text=Cell+Context+Screenshot)
+![Cell Context Screenshot](https://raw.githubusercontent.com/bhumukul-raj/ollama-ai-assistant-project/main/screenshots/cell-context.png)
 
 Cell toolbar buttons provide quick access to:
 - Explain code in the current cell
@@ -42,9 +54,10 @@ Cell toolbar buttons provide quick access to:
 
 ## Prerequisites
 
-- JupyterLab 3.0 or later
+- JupyterLab 4.0 or later
 - [Ollama](https://ollama.ai/) installed and running locally
-- Python 3.7+
+- Python 3.8+
+- Node.js 14+ (for development)
 
 ## Installation
 
@@ -62,7 +75,7 @@ git clone https://github.com/bhumukul-raj/ollama-ai-assistant-project.git
 cd ollama-ai-assistant-project/jupyterlab-ai-assistant
 
 # Install using the provided script (recommended)
-./install.sh
+./build-dev.sh
 
 # Or install manually
 pip install -e .
@@ -104,6 +117,41 @@ Make sure you have Ollama installed and running. You can download it from [ollam
    - 💬 Chat - Ask a custom question about this cell
 4. View the AI's response in the popup dialog
 
+## Key Features
+
+1. **Cell-Specific AI Assistance**
+   - Quick access buttons in cell toolbar
+   - Pre-formatted questions for common tasks:
+     - Explain code
+     - Fix bugs
+     - Optimize code
+     - Generate documentation
+     - Custom queries
+   - Context-aware responses based on cell content and type
+   - Real-time streaming responses
+
+2. **Chat Interface**
+   - Real-time message streaming
+   - Full markdown support with syntax highlighting
+   - Code block formatting
+   - Model selection from available Ollama models
+   - Theme-aware design (light/dark)
+   - Responsive layout for all screen sizes
+
+3. **Ollama Integration**
+   - Automatic model detection and listing
+   - Support for all Ollama models
+   - API compatibility checking and fallbacks
+   - Embeddings support
+   - Error handling and connectivity testing
+
+4. **User Experience**
+   - Bootstrap-powered responsive design
+   - Smooth animations and transitions
+   - Clear loading states and indicators
+   - Comprehensive error handling
+   - JupyterLab theme integration
+
 ## Configuration
 
 You can configure the extension in JupyterLab's Settings menu:
@@ -122,7 +170,9 @@ Available settings:
   "maxTokens": 4096,
   "defaultTemperature": "0.7",
   "requestTimeout": 60,
-  "debugMode": true
+  "debugMode": false,
+  "allowedModels": null,
+  "modelOptions": {}
 }
 ```
 
@@ -159,11 +209,36 @@ The extension includes a test tool to verify connectivity:
 
 ## Development
 
-For development information, please refer to [TEST_README.md](./TEST_README.md) which contains details on:
-- Development setup and configuration
-- Testing procedures
-- Architecture overview
-- Contribution guidelines
+For development setup:
+
+```bash
+# Clone the repository
+git clone https://github.com/bhumukul-raj/ollama-ai-assistant-project.git
+cd ollama-ai-assistant-project/jupyterlab-ai-assistant
+
+# Run development setup
+./build-dev.sh
+```
+
+Or manually:
+
+```bash
+# Clone the repository
+git clone https://github.com/bhumukul-raj/ollama-ai-assistant-project.git
+cd ollama-ai-assistant-project/jupyterlab-ai-assistant
+
+# Install dependencies
+pip install -e .
+jupyter labextension develop . --overwrite
+
+# Watch for changes during development
+npm run watch
+```
+
+In a separate terminal, run JupyterLab in watch mode:
+```bash
+jupyter lab --watch
+```
 
 ## License
 
@@ -171,4 +246,8 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ## Author
 
-- **bhumukulraj** - [GitHub](https://github.com/bhumukul-raj) - [Email](mailto:bhumukulraj@gmail.com) 
+- **Bhumukul Raj** - [GitHub](https://github.com/bhumukul-raj) - [Email](mailto:bhumukulraj@gmail.com)
+
+## Contributing
+
+Contributions, issues, and feature requests are welcome! Feel free to check [issues page](https://github.com/bhumukul-raj/ollama-ai-assistant-project/issues). 

@@ -16,19 +16,21 @@ This extension enhances JupyterLab with:
 ```
 jupyterlab-ai-assistant/
 ├── jupyterlab_ai_assistant/            # Python package (backend)
-│   ├── __init__.py                     # Package initialization
-│   ├── _version.py                     # Version information
+│   ├── __init__.py                     # Package initialization & server extension paths
+│   ├── _version.py                     # Version information (auto-generated)
 │   ├── handlers.py                     # API handlers for Ollama communication
-│   ├── config.py                       # Configuration management
+│   ├── config.py                       # Configuration management with Traitlets
 │   └── ollama_client.py                # Ollama API client wrapper
 │
 ├── src/                                # TypeScript/React frontend
 │   ├── index.tsx                       # Extension entry point
+│   ├── plugin.ts                       # Main plugin definition & command registration
 │   ├── components/                     # React components
 │   │   ├── ChatWidget.tsx              # Main chat interface component
 │   │   ├── ChatMessage.tsx             # Individual message component
 │   │   ├── ModelSelector.tsx           # Ollama model selector
 │   │   ├── CellToolbarButton.tsx       # Cell toolbar button component
+│   │   ├── celltoolgroup.tsx           # Cell toolbar group component 
 │   │   └── OllamaTestWidget.tsx        # Ollama connection test widget
 │   ├── services/                       # Service modules
 │   │   └── ollama.ts                   # Ollama API service
@@ -40,14 +42,16 @@ jupyterlab-ai-assistant/
 │   ├── index.css                       # Main stylesheet
 │   └── index.js                        # Style loader
 │
+├── build-dev.sh                        # Development environment setup script
+├── build-dist.sh                       # Distribution build script
 ├── lib/                                # Compiled JavaScript (build output)
 ├── schema/                             # Extension schema
 │   └── plugin.json                     # Extension configuration
 │
 ├── tsconfig.json                       # TypeScript configuration
 ├── package.json                        # NPM package definition
-├── pyproject.toml                      # Python project configuration
-├── setup.py                            # Python setup script
+├── pyproject.toml                      # Python project configuration (defines dependencies & build)
+├── setup.py                            # Python setup script (handles installation and asset management)
 └── README.md                           # Project documentation
 ```
 
@@ -57,85 +61,126 @@ jupyterlab-ai-assistant/
 
 #### Python Server Extension
 - **`handlers.py`**: Defines JupyterLab server endpoints that proxy requests to Ollama
-  - `/api/ollama/chat` - POST endpoint for chat completions
-  - `/api/ollama/models` - GET endpoint for available models
-  - `/api/ollama/cell-context` - POST endpoint to analyze cell code
-  - `/api/ollama/embeddings` - POST endpoint for generating embeddings
+  - **`OllamaModelsHandler`**: GET endpoint for available models
+  - **`OllamaChatHandler`**: POST endpoint for chat completions with streaming support
+  - **`OllamaCellContextHandler`**: POST endpoint to analyze cell code
+  - **`OllamaEmbeddingsHandler`**: POST endpoint for generating embeddings
+  - **`OllamaTestHandler`**: GET/POST endpoints for testing Ollama connectivity
+
+#### Configuration Management
+- **`config.py`**: Uses Jupyter's Traitlets for configuration
+  - **`OllamaConfig`**: Configuration class with the following options:
+    - `base_url`: Ollama API URL (default: http://localhost:11434)
+    - `enabled`: Toggle Ollama integration (default: True)
+    - `default_model`: Default model (default: llama2)
+    - `allowed_models`: List of allowed models (optional, all if not specified)
+    - `max_tokens`: Maximum token generation limit (default: 4096)
+    - `default_temperature`: Generation temperature (default: 0.7)
+    - `request_timeout`: API timeout in seconds (default: 60)
+    - `model_options`: Model-specific option overrides
+    - `debug_mode`: Toggle debug logging (default: False)
 
 #### Ollama Integration
 - **`ollama_client.py`**: Wrapper around the Ollama API
-  - Communicates with locally running Ollama service
-  - Handles model selection, prompting, and response streaming
-  - Implements context formatting for code cells
-  - Supports both chat and generate APIs with fallback
+  - **`OllamaClient`**: Client class with methods:
+    - `list_models()`: Gets available models from Ollama
+    - `chat_completion()`: Handles chat API with streaming support
+    - `generate_embeddings()`: Gets vector embeddings
+    - `_check_chat_api_support()`: Checks for modern Ollama API compatibility
+    - `_format_generate_payload()`: Formats messages for API compatibility
 
 ### 2. Frontend Architecture
 
 #### React Components
 - **`ChatWidget.tsx`**: Main chat interface
-  - Chat history display with markdown support
-  - Message input with code highlighting
-  - Model selection dropdown
-  - Theme-aware styling
-  - Responsive design for all screen sizes
+  - Manages chat history and message display
+  - Handles sending messages to Ollama
+  - Streams AI responses with real-time updates
+  - Provides model selection dropdown
+  - Supports theme-aware styling
 
-- **`CellToolbarButton.tsx`**: Adds buttons to each cell for quick queries
-  - Captures cell content
-  - Formats appropriate prompt based on cell type
-  - Sends to Ollama with proper context
-  - Displays responses in a modal dialog
+- **`CellToolbarButton.tsx`**: Adds AI assistance to cell toolbar
+  - Captures cell content for analysis
+  - Provides pre-formatted question templates
+  - Shows dialog with query and AI response
+  - Renders markdown and code in responses
+  - Displays loading indicators and error messages
 
 - **`ChatMessage.tsx`**: Individual message component
-  - Supports markdown rendering
-  - Code block syntax highlighting
-  - Theme-aware styling
-  - Timestamp display
+  - Renders user and assistant messages
+  - Provides markdown formatting with syntax highlighting
+  - Adapts to light/dark themes
+  - Shows timestamps
+
+- **`ModelSelector.tsx`**: Model selection dropdown
+  - Lists available Ollama models
+  - Handles model switching
+  - Shows model selection UI
+
+- **`OllamaTestWidget.tsx`**: Connection testing interface
+  - Tests connectivity to Ollama server
+  - Lists available models
+  - Provides diagnostics for troubleshooting
 
 #### Services
-- **`ollama.ts`**: Frontend service that communicates with backend endpoints
-  - Sends/receives chat messages
-  - Handles streaming responses
-  - Manages model selection
+- **`ollama.ts`**: Frontend service
+  - `requestAPI()`: Generic API request handler
+  - `getAvailableModels()`: Fetches model list
+  - `sendChatMessage()`: Sends messages with streaming
+  - `analyzeCellContent()`: Sends cell content for analysis
   - Provides error handling and logging
 
-### 3. Styling
+### 3. Plugin Configuration
+- **`plugin.ts`**: Main extension plugin
+  - Registers commands for AI actions
+  - Adds UI components to JupyterLab
+  - Manages extension lifecycle
+  - Creates toolbar buttons and palette commands
+  - Handles integration with notebook cells
 
-- **Base Styles** (`base.css`):
-  - Core layout and component styles
-  - JupyterLab theme integration
-  - Responsive design utilities
+### 4. Styling
 
-- **Chat Widget Styles** (`ChatWidget.css`):
-  - Chat interface specific styles
+- **`ChatWidget.css`**: Chat interface styles
   - Message bubbles and layout
-  - Code block formatting
-  - Dark/light theme support
+  - Input area styling
+  - Response formatting
+  - Responsive design adaptations
+  - Dark/light theme variations
+
+- **`base.css`**: Core component styles
+  - Core layout styles
+  - JupyterLab integration styles
+
+- **`index.css`**: Extension-wide styles
+  - Button styling
+  - Dialog formatting
+  - Cell toolbar integration
 
 ## System Architecture Diagram
 
-The following diagram illustrates how the various components of the JupyterLab AI Assistant interact:
+The following diagram illustrates how the components of the JupyterLab AI Assistant interact:
 
 ```
-┌───────────────────────────────────────────────────────────────┐
-│                      JupyterLab Interface                      │
+┌─────────────────────────────────────────────────────────────────┐
+│                      JupyterLab Interface                        │
 └───────────────────────────┬───────────────────────────────────┘
                             │
                             ▼
-┌───────────────────────────────────────────────────────────────┐
-│                     Extension Frontend                         │
-│                                                               │
-│  ┌─────────────┐   ┌────────────────┐   ┌──────────────────┐  │
-│  │ ChatWidget  │   │ Cell Toolbar   │   │  OllamaTest      │  │
-│  │ Components  │   │ Components     │   │  Widget          │  │
-│  └──────┬──────┘   └────────┬───────┘   └─────────┬────────┘  │
-│         │                   │                     │           │
-│         └─────────┬─────────┘─────────┬───────────┘           │
-│                   │                   │                       │
-│                   ▼                   ▼                       │
-│            ┌─────────────────────────────────────┐           │
-│            │       ollama.ts Service Layer       │           │
-│            └────────────────────┬────────────────┘           │
-│                                 │                             │
+┌─────────────────────────────────────────────────────────────────┐
+│                     Extension Frontend                           │
+│                                                                 │
+│  ┌─────────────┐   ┌────────────────┐   ┌──────────────────┐    │
+│  │ ChatWidget  │   │ Cell Toolbar   │   │  OllamaTest      │    │
+│  │ Components  │   │ Components     │   │  Widget          │    │
+│  └──────┬──────┘   └────────┬───────┘   └─────────┬────────┘    │
+│         │                   │                     │             │
+│         └─────────┬─────────┘─────────┬───────────┘             │
+│                   │                   │                         │
+│                   ▼                   ▼                         │
+│            ┌─────────────────────────────────────┐             │
+│            │       ollama.ts Service Layer       │             │
+│            └────────────────────┬────────────────┘             │
+│                                 │                               │
 └─────────────────────────────────┼─────────────────────────────┘
                                   │
                                   ▼
@@ -143,7 +188,7 @@ The following diagram illustrates how the various components of the JupyterLab A
 │                     Extension Backend                            │
 │                                                                 │
 │  ┌────────────────────┐      ┌───────────────────────────────┐  │
-│  │ Server API Handlers│      │           Config              │  │
+│  │ Server API Handlers│      │       OllamaConfig            │  │
 │  │  - OllamaModels    │      │     - Base URL                │  │
 │  │  - OllamaChat      │◄────►│     - Default Model           │  │
 │  │  - OllamaCellContext│     │     - Allowed Models          │  │
@@ -175,7 +220,7 @@ The following diagram illustrates how the various components of the JupyterLab A
 └──────────────────────────────────────────────────────────────────┘
 ```
 
-## Data Flow and Workflow
+## Data Flow Diagrams
 
 ### Chat Workflow
 
@@ -209,72 +254,72 @@ The following diagram illustrates how the various components of the JupyterLab A
 └───────────────┘     └───────────────┘     └───────────────┘     └───────────────┘
 ```
 
-### File Interactions in Request Flow
-
-For a typical cell-context request, these files are involved in the process:
-
-1. **Frontend Initiates Request**:
-   - `src/components/CellToolbarButton.tsx` - Captures cell content and user question
-   - `src/services/ollama.ts` - `analyzeCellContent()` function sends request to backend
-
-2. **Backend Processes Request**:
-   - `jupyterlab_ai_assistant/handlers.py` - `OllamaCellContextHandler` processes request
-   - `jupyterlab_ai_assistant/ollama_client.py` - Formats prompt and sends to Ollama API
-   - `jupyterlab_ai_assistant/config.py` - Provides configuration for request timeout, model options
-
-3. **Response Handling**:
-   - `jupyterlab_ai_assistant/handlers.py` - Sends response back to frontend
-   - `src/services/ollama.ts` - Processes response data
-   - `src/components/CellToolbarButton.tsx` - Renders response in dialog with markdown formatting
-
-### Error Handling Flow
-
-The extension implements robust error handling across all layers:
+### Request-Response Sequence
 
 ```
-┌───────────────┐     ┌───────────────┐     ┌───────────────┐     ┌───────────────┐
-│ User Interface│     │ Frontend      │     │ Python Server │     │ Ollama API    │
-│ Layer         │     │ Service Layer │     │ Extension     │     │ Connection    │
-└───────┬───────┘     └───────┬───────┘     └───────┬───────┘     └───────┬───────┘
-        │                     │                     │                     │
-        ▼                     ▼                     ▼                     ▼
-┌───────────────┐     ┌───────────────┐     ┌───────────────┐     ┌───────────────┐
-│ Display error │     │ Error handling│     │ Exception     │     │ Connection    │
-│ messages and  │◄────│ and logging   │◄────│ handling with │◄────│ timeouts and  │
-│ retry options │     │ in TypeScript │     │ Tornado       │     │ API errors    │
-└───────────────┘     └───────────────┘     └───────────────┘     └───────────────┘
+┌─────────┐          ┌─────────┐          ┌─────────────┐          ┌──────────┐
+│ Browser │          │ Jupyter │          │ Python      │          │ Ollama   │
+│ Client  │          │ Server  │          │ Extension   │          │ API      │
+└────┬────┘          └────┬────┘          └──────┬──────┘          └────┬─────┘
+     │                    │                      │                      │
+     │  HTTP Request      │                      │                      │
+     │ ───────────────────>                      │                      │
+     │                    │                      │                      │
+     │                    │  Forward Request     │                      │
+     │                    │ ───────────────────────>                    │
+     │                    │                      │                      │
+     │                    │                      │    Ollama Request    │
+     │                    │                      │ ──────────────────────>
+     │                    │                      │                      │
+     │                    │                      │    Stream Response   │
+     │                    │                      │ <──────────────────────
+     │                    │                      │                      │
+     │                    │  Stream Response     │                      │
+     │                    │ <───────────────────────                    │
+     │                    │                      │                      │
+     │  Stream Response   │                      │                      │
+     │ <───────────────────                      │                      │
+     │                    │                      │                      │
 ```
 
 ## Key Features
 
 1. **Cell-Specific AI Assistance**
    - Quick access buttons in cell toolbar
-   - Pre-formatted questions for common tasks
-   - Context-aware responses
-   - Code syntax highlighting
+   - Pre-formatted questions for common tasks:
+     - Explain code
+     - Fix bugs
+     - Optimize code
+     - Generate documentation
+     - Custom queries
+   - Context-aware responses based on cell content and type
+   - Real-time streaming responses
 
 2. **Chat Interface**
    - Real-time message streaming
-   - Markdown support
-   - Code block syntax highlighting
-   - Model selection
-   - Theme-aware design
+   - Full markdown support with syntax highlighting
+   - Code block formatting
+   - Model selection from available Ollama models
+   - Theme-aware design (light/dark)
+   - Responsive layout for all screen sizes
 
 3. **Ollama Integration**
-   - Support for multiple models
-   - Automatic model detection
-   - Fallback mechanisms for API compatibility
-   - Error handling and recovery
+   - Automatic model detection and listing
+   - Support for all Ollama models
+   - API compatibility checking and fallbacks
+   - Embeddings support
+   - Error handling and connectivity testing
 
 4. **User Experience**
-   - Responsive design for all screen sizes
+   - Bootstrap-powered responsive design
    - Smooth animations and transitions
-   - Clear error messages
-   - Loading states and indicators
+   - Clear loading states and indicators
+   - Comprehensive error handling
+   - JupyterLab theme integration
 
-## Configuration
+## Configuration Options
 
-The extension can be configured through JupyterLab's settings:
+The extension can be configured through JupyterLab's advanced settings:
 
 ```json
 {
@@ -284,38 +329,67 @@ The extension can be configured through JupyterLab's settings:
   "maxTokens": 4096,
   "defaultTemperature": "0.7",
   "requestTimeout": 60,
-  "debugMode": true
+  "debugMode": false,
+  "allowedModels": null,
+  "modelOptions": {}
 }
 ```
 
-## Development
+## Development Setup
 
 ### Prerequisites
-- JupyterLab 3.0+
+- JupyterLab 4.0+
 - Node.js 14+
-- Python 3.7+
+- Python 3.8+
 - Ollama installed and running locally
 
 ### Installation
+
+Use the provided build script for automatic setup:
+
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/jupyterlab-ai-assistant.git
-cd jupyterlab-ai-assistant
+git clone https://github.com/bhumukul-raj/ollama-ai-assistant-project.git
+cd ollama-ai-assistant-project/jupyterlab-ai-assistant
 
-# Install dependencies
-./install.sh
+# Run development setup
+./build-dev.sh
 ```
 
-### Development Workflow
-1. Start Ollama service: `ollama serve`
-2. Pull required models: `ollama pull llama2`
-3. Start JupyterLab: `jupyter lab`
-4. Make changes and rebuild:
-   ```bash
-   jlpm build
-   jupyter lab build
-   ```
+Or install manually:
+
+```bash
+# Clone the repository
+git clone https://github.com/bhumukul-raj/ollama-ai-assistant-project.git
+cd ollama-ai-assistant-project/jupyterlab-ai-assistant
+
+# Install dependencies
+pip install -e .
+jupyter labextension develop . --overwrite
+
+# Watch for changes during development
+npm run watch
+```
+
+In a separate terminal, run JupyterLab in watch mode:
+```bash
+jupyter lab --watch
+```
 
 ## License
 
-This project is licensed under the MIT License - see the LICENSE file for details. 
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## Author
+
+- **Bhumukul Raj** - [GitHub](https://github.com/bhumukul-raj) - [Email](mailto:bhumukulraj@gmail.com)
+
+## Contributing
+
+Contributions, issues, and feature requests are welcome! Feel free to check [issues page](https://github.com/bhumukul-raj/ollama-ai-assistant-project/issues).
+
+## Screenshots
+
+![JupyterLab AI Assistant Chat](https://raw.githubusercontent.com/bhumukul-raj/ollama-ai-assistant-project/main/screenshots/chat-widget.png)
+
+![Cell Context Menu](https://raw.githubusercontent.com/bhumukul-raj/ollama-ai-assistant-project/main/screenshots/cell-context.png) 

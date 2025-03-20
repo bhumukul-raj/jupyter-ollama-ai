@@ -24,7 +24,9 @@ var/
 venv/
 .venv/
 ENV/
-
+dev-venv/
+dist-venv/
+cheak-venv/
 # TypeScript/JavaScript
 .yarn/
 node_modules/

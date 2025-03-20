@@ -5,13 +5,31 @@ import {
 } from '@jupyterlab/application';
 
 import { ISettingRegistry } from '@jupyterlab/settingregistry';
-import { ICommandPalette, showDialog, Dialog, ReactWidget } from '@jupyterlab/apputils';
-import { IMainMenu } from '@jupyterlab/mainmenu';
+import { 
+  ICommandPalette, 
+  showDialog, 
+  Dialog, 
+  ReactWidget, 
+  WidgetTracker, 
+  IWidgetTracker,
+  CommandToolbarButton
+} from '@jupyterlab/apputils';
+import { IMainMenu, MainMenu } from '@jupyterlab/mainmenu';
 import { IThemeManager } from '@jupyterlab/apputils';
 import { INotebookTracker } from '@jupyterlab/notebook';
-import { userIcon } from '@jupyterlab/ui-components';
+import { Cell } from '@jupyterlab/cells';
+import { Menu } from '@lumino/widgets';
+import { CommandRegistry } from '@lumino/commands';
 import { toArray } from '@lumino/algorithm';
-import { Widget, Menu } from '@lumino/widgets';
+import {
+  LabIcon,
+  ToolbarButton,
+  refreshIcon,
+  bugIcon,
+  buildIcon,
+  searchIcon,
+  userIcon
+} from '@jupyterlab/ui-components';
 import * as ReactDOM from 'react-dom';
 import React from 'react';
 
@@ -227,7 +245,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
     // Add cell analysis commands
     commands.addCommand('ai-assistant:analyze-cell', {
       label: () => `Explain Code with AI (${currentModel})`,
-      icon: 'ui-components:search',
+      icon: searchIcon,
       execute: async () => {
         try {
           console.log('[DEBUG] Executing ai-assistant:analyze-cell command');
@@ -290,7 +308,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
 
     commands.addCommand('ai-assistant:optimize-cell', {
       label: () => `Optimize Code with AI (${currentModel})`,
-      icon: 'ui-components:build',
+      icon: buildIcon,
       execute: async () => {
         try {
           console.log('[DEBUG] Executing ai-assistant:optimize-cell command');
@@ -353,7 +371,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
 
     commands.addCommand('ai-assistant:debug-cell', {
       label: () => `Debug Code with AI (${currentModel})`,
-      icon: 'ui-components:bug',
+      icon: bugIcon,
       execute: async () => {
         try {
           console.log('[DEBUG] Executing ai-assistant:debug-cell command');
@@ -416,7 +434,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
 
     commands.addCommand('ai-assistant:chat-cell', {
       label: () => `Chat about Code with AI (${currentModel})`,
-      icon: 'ui-components:user',
+      icon: userIcon,
       execute: async () => {
         try {
           console.log('[DEBUG] Executing ai-assistant:chat-cell command');
@@ -570,7 +588,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
         aiMenu.addItem({ type: 'submenu', submenu: cellMenu });
         
         // Add the menu to mainMenu
-        mainMenu.addMenu(aiMenu, { rank: 80 });
+        mainMenu.addMenu(aiMenu);
       } catch (error) {
         console.error('Failed to create AI menu:', error);
       }

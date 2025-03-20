@@ -2,8 +2,8 @@
 
 [![PyPI version](https://img.shields.io/pypi/v/jupyterlab-ai-assistant.svg)](https://pypi.org/project/jupyterlab-ai-assistant/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![JupyterLab](https://img.shields.io/badge/JupyterLab-3.6.3-orange.svg)](https://jupyterlab.readthedocs.io/en/stable/)
-[![Python](https://img.shields.io/badge/Python-3.7+-blue.svg)](https://www.python.org/downloads/)
+[![JupyterLab](https://img.shields.io/badge/JupyterLab-4.x-orange.svg)](https://jupyterlab.readthedocs.io/en/stable/)
+[![Python](https://img.shields.io/badge/Python-3.8+-blue.svg)](https://www.python.org/downloads/)
 
 A comprehensive JupyterLab extension that integrates Ollama-powered AI assistance directly into notebooks with cell-specific context awareness and responsive design.
 
@@ -45,34 +45,62 @@ Cell toolbar buttons provide quick access to:
 
 ## 📋 Prerequisites
 
-- JupyterLab 3.6.3 (recommended)
+- JupyterLab 4.x (compatible with 4.0.0 and above)
 - [Ollama](https://ollama.ai/) installed and running locally
-- Python 3.7+
+- Python 3.8+
 
 ### Detailed Dependencies
 
 This extension has the following specific dependencies:
 
 ```
-jupyterlab == 3.6.3
-jupyter_server >= 2.0.0, < 3.0.0
-jupyter-client >= 7.4.4, < 8.0.0
-jupyter_server_terminals >= 0.5.0
+jupyterlab >= 4.0.0, < 5.0.0
+jupyter_server >= 2.0.0
+jupyter-client >= 8.0.0
 aiohttp
 requests >= 2.25.0
 ```
 
-## 🚀 Installation
+### Frontend Dependencies
 
-### Install from PyPI (recommended)
-
-```bash
-pip install jupyterlab-ai-assistant
+```
+react >= 18.2.0
+react-dom >= 18.2.0
+react-markdown >= 8.0.0
+bootstrap >= 5.3.3
 ```
 
-After installation, restart JupyterLab or rebuild it:
+## 🚀 Installation
+
+### Method 1: Install from Source
+
+Use the provided installation script which handles all dependencies and setup:
 
 ```bash
+# Clone the repository
+git clone https://github.com/bhumukul-raj/ollama-ai-assistant-project.git
+cd ollama-ai-assistant-project/jupyterlab-ai-assistant
+
+# Run the installation script (creates a virtual environment)
+bash install-fixed.sh
+```
+
+### Method 2: Manual Installation
+
+```bash
+# Create a virtual environment (recommended)
+python -m venv venv
+source venv/bin/activate
+
+# Install JupyterLab 4.x and dependencies
+pip install "jupyterlab>=4.0.0,<5.0.0" "jupyter_server>=2.0.0,<3.0.0" "jupyter-client>=8.0.0"
+pip install aiohttp "requests>=2.25.0"
+
+# Install the extension in development mode
+pip install -e .
+
+# Build and link the extension
+jupyter labextension develop . --overwrite
 jupyter lab build
 ```
 
@@ -154,10 +182,22 @@ For the best experience, we recommend:
 - A system with at least 8GB RAM
 - Sufficient disk space for Ollama models (models range from 1GB to 10GB+ each)
 - A modern web browser (Chrome, Firefox, Safari, Edge)
+- Python 3.8 or newer
 
 ## 🔧 Troubleshooting
 
 ### Common Issues
+
+- **Extension visible in `jupyter labextension list` but not in JupyterLab UI**:
+  - Clear JupyterLab caches with `jupyter lab clean`
+  - Remove any conflicting configurations in `~/.jupyter/jupyter_server_config.json`
+  - Run `jupyter server extension enable jupyterlab_ai_assistant`
+  - Restart JupyterLab completely
+
+- **"Module not found" error for jupyterlab_ai_assistant**:
+  - Ensure you're running JupyterLab from the same virtual environment where you installed the extension
+  - Try reinstalling: `pip install -e .` from the extension directory
+  - Check that the module is in your Python path with `python -c "import sys; print(sys.path)"`
 
 - **No models available**: 
   - Ensure Ollama is running (`ollama serve`)
@@ -169,15 +209,22 @@ For the best experience, we recommend:
   - Check your network configuration if running on a remote system
   - Ensure there are no firewall rules blocking the connection
 
-- **Extension not showing up**:
-  - Run `jupyter labextension list` to verify the extension is installed
-  - Try restarting the JupyterLab server: `jupyter lab --no-browser`
+- **TypeScript build errors**:
+  - Make sure you have Node.js installed (version 14 or higher recommended)
+  - Run a clean build: `npm run clean && npm run build:prod`
 
 ### Testing the Connection
 
 The extension includes a test tool to verify connectivity:
 1. From the JupyterLab menu, select: AI Assistant > Test Ollama Connection
 2. A panel will open showing all available models if the connection is successful
+
+### Checking Server Logs
+
+If experiencing issues, check the JupyterLab server logs for error messages:
+```bash
+jupyter lab --debug
+```
 
 ## 🛠️ Development
 
@@ -191,34 +238,15 @@ cd ollama-ai-assistant-project/jupyterlab-ai-assistant
 # Install dependencies
 pip install -e .
 jupyter labextension develop . --overwrite
+
+# Watch for changes during development
+npm run watch
 ```
 
-### Publishing to PyPI
-
-For maintainers who need to publish updates to PyPI:
-
-1. Update version in `package.json` and `pyproject.toml`
-
-2. Build the distribution packages:
-   ```bash
-   python -m build
-   ```
-
-3. Test your build with TestPyPI first:
-   ```bash
-   # Using twine
-   python -m twine upload --repository-url https://test.pypi.org/legacy/ dist/*
-   ```
-
-4. Install from TestPyPI to verify:
-   ```bash
-   pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple jupyterlab-ai-assistant
-   ```
-
-5. Upload to the real PyPI:
-   ```bash
-   python -m twine upload dist/*
-   ```
+In a separate terminal, run JupyterLab in watch mode:
+```bash
+jupyter lab --watch
+```
 
 ## 📝 License
 
