@@ -1,10 +1,9 @@
-# JupyterLab AI Assistant Extension
+# JupyterLab AI Assistant
 
 [![PyPI version](https://img.shields.io/pypi/v/jupyterlab-ai-assistant.svg)](https://pypi.org/project/jupyterlab-ai-assistant/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![JupyterLab](https://img.shields.io/badge/JupyterLab-3.6.3-orange.svg)](https://jupyterlab.readthedocs.io/en/stable/)
 [![Python](https://img.shields.io/badge/Python-3.7+-blue.svg)](https://www.python.org/downloads/)
-[![TestPyPI](https://img.shields.io/badge/TestPyPI-available-brightgreen.svg)](https://test.pypi.org/project/jupyterlab-ai-assistant/)
 
 A comprehensive JupyterLab extension that integrates Ollama-powered AI assistance directly into notebooks with cell-specific context awareness and responsive design.
 
@@ -63,31 +62,29 @@ aiohttp
 requests >= 2.25.0
 ```
 
-For development, additional dependencies are required:
-```
-hatchling
-hatch-nodejs-version
-hatch-jupyter-builder
-jupyter_packaging
-build
-pip-tools
-```
+## 🚀 Installation
 
-## 🚀 Quick Start
-
-### Installation
-
-Install from PyPI (recommended):
+### Install from PyPI (recommended)
 
 ```bash
 pip install jupyterlab-ai-assistant
 ```
 
-Then restart JupyterLab or run:
+After installation, restart JupyterLab or rebuild it:
 
 ```bash
 jupyter lab build
 ```
+
+### Verify Installation
+
+To verify the extension is properly installed:
+
+```bash
+jupyter labextension list
+```
+
+You should see `jupyterlab-ai-assistant` listed in the output.
 
 ### Ollama Setup
 
@@ -100,13 +97,6 @@ jupyter lab build
    ```bash
    ollama pull llama2
    ```
-
-### Using the Extension
-
-1. Launch JupyterLab
-2. Click on the "AI Assistant" icon in the left sidebar
-3. Select a model from the dropdown
-4. Start asking questions!
 
 ## 📖 Usage Guide
 
@@ -216,10 +206,7 @@ For maintainers who need to publish updates to PyPI:
 
 3. Test your build with TestPyPI first:
    ```bash
-   # Using the provided script
-   ../pypi/upload_to_testpypi.sh ./dist
-   
-   # Or manually with twine
+   # Using twine
    python -m twine upload --repository-url https://test.pypi.org/legacy/ dist/*
    ```
 
@@ -243,4 +230,10 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ## 🤝 Contributing
 
-Contributions, issues, and feature requests are welcome! Feel free to check [issues page](https://github.com/bhumukul-raj/ollama-ai-assistant-project/issues). 
+Contributions, issues, and feature requests are welcome! Feel free to check [issues page](https://github.com/bhumukul-raj/ollama-ai-assistant-project/issues).
+
+## 📸 Screenshots
+
+![JupyterLab AI Assistant Chat](https://raw.githubusercontent.com/bhumukul-raj/ollama-ai-assistant-project/main/screenshots/chat-widget.png)
+
+![Cell Context Menu](https://raw.githubusercontent.com/bhumukul-raj/ollama-ai-assistant-project/main/screenshots/cell-context.png) 
