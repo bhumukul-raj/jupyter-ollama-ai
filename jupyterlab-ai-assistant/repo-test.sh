@@ -32,7 +32,7 @@ pip install aiohttp "requests>=2.25.0"
 
 # Install jupyterlab-ai-assistant from Test PyPI
 echo "Installing jupyterlab-ai-assistant from Test PyPI..."
-pip install -i https://test.pypi.org/simple/ jupyterlab-ai-assistant==0.1.2
+pip install -i https://test.pypi.org/simple/ jupyterlab_ai_assistant==0.1.4
 
 # Verify installation
 echo "Verifying installation..."
