@@ -26,16 +26,16 @@ check_command pip
 
 # Create and activate virtual environment if it doesn't exist
 echo -e "\n${YELLOW}Step 1: Setting up virtual environment...${NC}"
-if [ ! -d "cheak-venv" ]; then
+if [ ! -d "check-venv" ]; then
     echo -e "Creating virtual environment..."
-    python3 -m venv cheak-venv
+    python3 -m venv check-venv
     echo -e "${GREEN}✓ Virtual environment created${NC}"
 else
     echo -e "Virtual environment already exists."
 fi
 
 echo -e "Activating virtual environment..."
-source cheak-venv/bin/activate
+source check-venv/bin/activate
 echo -e "${GREEN}✓ Virtual environment activated${NC}"
 
 # Clean previous installation
@@ -72,7 +72,7 @@ echo -e "${GREEN}Installation from Test PyPI completed successfully!${NC}"
 echo -e "${BLUE}====================================================================${NC}"
 echo 
 echo -e "To start JupyterLab with the AI Assistant:"
-echo -e "1. Activate the virtual environment: ${YELLOW}source cheak-venv/bin/activate${NC}"
+echo -e "1. Activate the virtual environment: ${YELLOW}source check-venv/bin/activate${NC}"
 echo -e "2. Start JupyterLab: ${YELLOW}jupyter lab${NC}"
 
 # Ask if user wants to start JupyterLab in debug mode
