@@ -218,7 +218,6 @@
 
 /* Cell Context Menu Styles */
 .cell-context-menu {
-  position: absolute;
   z-index: 1000;
   min-width: 600px;
   max-width: 800px;
@@ -229,28 +228,47 @@
   box-shadow: 0 1rem 3rem rgba(0, 0, 0, 0.3) !important;
   border: 1px solid var(--jp-border-color1);
   overflow: hidden;
-  transform: translateY(0) scale(1);
+  transform: scale(0.95);
   opacity: 0;
   transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  pointer-events: auto; /* Enable interactions with the dialog */
 }
 
 /* Animation classes */
 .cell-context-menu.animate-in {
   opacity: 1;
-  transform: translateY(0) scale(1);
+  transform: scale(1);
 }
 
 .cell-context-menu.animate-out {
   opacity: 0;
-  transform: translateY(10px) scale(0.95);
+  transform: scale(0.95);
 }
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .cell-context-menu {
-    min-width: 400px;
+    min-width: 350px;
     width: 90%;
     max-height: 90vh;
+    transform: scale(0.95);
+  }
+  
+  .cell-context-menu.animate-in {
+    transform: scale(1);
+  }
+  
+  .cell-context-menu.animate-out {
+    transform: scale(0.95);
+  }
+}
+
+/* For very small screens */
+@media (max-width: 480px) {
+  .cell-context-menu {
+    min-width: 300px;
+    width: 95%;
+    max-height: 95vh;
   }
 }
 

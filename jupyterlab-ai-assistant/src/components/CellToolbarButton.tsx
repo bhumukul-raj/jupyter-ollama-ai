@@ -210,7 +210,7 @@ const CellContextMenu: React.FC<CellContextMenuProps> = ({
   const cellType = getCellType();
 
   return (
-    <div className={`cell-context-menu card shadow-lg ${animationClass} w-100 max-w-800px mx-auto`}>
+    <div className={`cell-context-menu card shadow-lg ${animationClass}`}>
       <div className="card-header d-flex justify-content-between align-items-center py-3 px-4 border-bottom">
         <div>
           <h5 className="m-0 d-flex align-items-center fw-bold">

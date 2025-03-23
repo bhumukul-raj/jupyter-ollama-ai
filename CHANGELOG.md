@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.1.2] - 2024-08-01
 
 ### Bug Fixes
-
+- cell button response dialog is shifting its position [FIXED].
 ### Improvements
 
 

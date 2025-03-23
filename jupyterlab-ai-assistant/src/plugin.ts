@@ -255,11 +255,16 @@ const plugin: JupyterFrontEndPlugin<void> = {
             
             // Create a widget to host our React component
             const host = document.createElement('div');
-            host.style.position = 'absolute';
-            host.style.top = '50%';
-            host.style.left = '50%';
-            host.style.transform = 'translate(-50%, -50%)';
+            host.style.position = 'fixed';
+            host.style.top = '0';
+            host.style.left = '0';
+            host.style.width = '100%';
+            host.style.height = '100%';
             host.style.zIndex = '1000';
+            host.style.display = 'flex';
+            host.style.justifyContent = 'center';
+            host.style.alignItems = 'center';
+            host.style.pointerEvents = 'none'; // Allow clicking through the background
             
             // Attach to the document body
             document.body.appendChild(host);
@@ -318,11 +323,16 @@ const plugin: JupyterFrontEndPlugin<void> = {
             
             // Create a widget to host our React component
             const host = document.createElement('div');
-            host.style.position = 'absolute';
-            host.style.top = '50%';
-            host.style.left = '50%';
-            host.style.transform = 'translate(-50%, -50%)';
+            host.style.position = 'fixed';
+            host.style.top = '0';
+            host.style.left = '0';
+            host.style.width = '100%';
+            host.style.height = '100%';
             host.style.zIndex = '1000';
+            host.style.display = 'flex';
+            host.style.justifyContent = 'center';
+            host.style.alignItems = 'center';
+            host.style.pointerEvents = 'none'; // Allow clicking through the background
             
             // Attach to the document body
             document.body.appendChild(host);
@@ -381,11 +391,16 @@ const plugin: JupyterFrontEndPlugin<void> = {
             
             // Create a widget to host our React component
             const host = document.createElement('div');
-            host.style.position = 'absolute';
-            host.style.top = '50%';
-            host.style.left = '50%';
-            host.style.transform = 'translate(-50%, -50%)';
+            host.style.position = 'fixed';
+            host.style.top = '0';
+            host.style.left = '0';
+            host.style.width = '100%';
+            host.style.height = '100%';
             host.style.zIndex = '1000';
+            host.style.display = 'flex';
+            host.style.justifyContent = 'center';
+            host.style.alignItems = 'center';
+            host.style.pointerEvents = 'none'; // Allow clicking through the background
             
             // Attach to the document body
             document.body.appendChild(host);
@@ -444,11 +459,16 @@ const plugin: JupyterFrontEndPlugin<void> = {
             
             // Create a widget to host our React component
             const host = document.createElement('div');
-            host.style.position = 'absolute';
-            host.style.top = '50%';
-            host.style.left = '50%';
-            host.style.transform = 'translate(-50%, -50%)';
+            host.style.position = 'fixed';
+            host.style.top = '0';
+            host.style.left = '0';
+            host.style.width = '100%';
+            host.style.height = '100%';
             host.style.zIndex = '1000';
+            host.style.display = 'flex';
+            host.style.justifyContent = 'center';
+            host.style.alignItems = 'center';
+            host.style.pointerEvents = 'none'; // Allow clicking through the background
             
             // Attach to the document body
             document.body.appendChild(host);
