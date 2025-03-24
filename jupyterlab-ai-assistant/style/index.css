@@ -34,19 +34,23 @@
   background-color: var(--jp-brand-color1);
   color: white;
   border: none;
-  border-radius: 3px;
-  padding: 2px 8px;
+  border-radius: 6px;
+  padding: 4px 10px;
   margin: 2px;
   font-size: 12px;
   cursor: pointer;
-  height: 24px;
-  line-height: 20px;
+  height: 26px;
+  line-height: 18px;
   align-items: center;
   display: inline-flex;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .jp-AI-CellToolbarButton:hover {
   background-color: var(--jp-brand-color0);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
 }
 
 /* Direct Action Button Styles */
@@ -54,38 +58,46 @@
   background-color: #4285f4;
   color: white;
   border: none;
-  border-radius: 3px;
-  padding: 2px 8px;
+  border-radius: 6px;
+  padding: 4px 10px;
   margin: 2px;
   font-size: 12px;
   cursor: pointer;
-  height: 24px;
-  line-height: 20px;
+  height: 26px;
+  line-height: 18px;
   align-items: center;
   display: inline-flex;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .jp-AI-ExplainButton:hover {
   background-color: #3b78e7;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
 }
 
 .jp-AI-OptimizeButton {
   background-color: #34a853;
   color: white;
   border: none;
-  border-radius: 3px;
-  padding: 2px 8px;
+  border-radius: 6px;
+  padding: 4px 10px;
   margin: 2px;
   font-size: 12px;
   cursor: pointer;
-  height: 24px;
-  line-height: 20px;
+  height: 26px;
+  line-height: 18px;
   align-items: center;
   display: inline-flex;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .jp-AI-OptimizeButton:hover {
-  background-color: #2d9447;
+  background-color: #2d9248;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
 }
 
 /* AI Analysis Dialog Styles */

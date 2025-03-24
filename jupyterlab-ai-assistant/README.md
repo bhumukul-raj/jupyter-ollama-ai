@@ -132,6 +132,69 @@ You should see `jupyterlab-ai-assistant` listed in the output.
    ollama pull llama2
    ```
 
+### Running in Container Environments
+
+When running JupyterLab in a container and accessing Ollama on the host machine, you need to configure the connection properly:
+
+#### Container-to-Host Connection
+
+In containerized environments, `localhost` refers to the container itself, not the host. To connect to Ollama running on your host machine:
+
+1. **Configure the Base URL** using one of these approaches:
+
+   - **For Docker on macOS/Windows**:
+     ```bash
+     export OLLAMA_BASE_URL=http://host.docker.internal:11434
+     ```
+
+   - **For Docker on Linux**:
+     ```bash
+     export OLLAMA_BASE_URL=http://172.17.0.1:11434
+     ```
+
+   - **For Podman**:
+     ```bash
+     export OLLAMA_BASE_URL=http://host.containers.internal:11434
+     ```
+
+   - **Using your host's actual IP address**:
+     ```bash
+     export OLLAMA_BASE_URL=http://<host-ip>:11434
+     ```
+
+2. **Container Network Options**:
+   
+   - Use the host network (simplest solution):
+     ```bash
+     docker run --network=host ...
+     ```
+     
+   - For Docker on Linux, you may need to add:
+     ```bash
+     docker run --add-host=host.docker.internal:host-gateway ...
+     ```
+
+#### Testing Container-to-Host Connectivity
+
+Use the included test script to automatically check and identify working host connections:
+
+```bash
+python container-test.py
+```
+
+This script will:
+- Test multiple common host addresses
+- Report which connections work
+- Provide configuration guidance based on results
+
+#### Troubleshooting
+
+If you can't connect:
+1. Ensure Ollama is running on the host
+2. Check host firewall settings
+3. Try running with `--network=host`
+4. Set `OLLAMA_BASE_URL` to your host's actual IP address
+
 ## 📖 Usage Guide
 
 ### Chat Interface

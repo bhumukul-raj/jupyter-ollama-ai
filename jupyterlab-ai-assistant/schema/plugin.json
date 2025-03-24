@@ -11,19 +11,19 @@
       {
         "name": "ai-explain",
         "command": "jupyterlab-ai-assistant:explain-cell",
-        "icon": "ui-components:info",
+        "icon": "ui-components:build",
         "rank": 20
       },
       {
         "name": "ai-optimize",
         "command": "jupyterlab-ai-assistant:optimize-cell",
-        "icon": "ui-components:build",
+        "icon": "ui-components:bug",
         "rank": 30
       },
       {
         "name": "ai-visualize",
         "command": "jupyterlab-ai-assistant:visualize-cell",
-        "icon": "ui-components:search",
+        "icon": "ui-components:chart",
         "rank": 40
       }
     ]

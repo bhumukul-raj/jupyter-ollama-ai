@@ -13,6 +13,7 @@ import requests
 import datetime
 
 from .ollama_client import OllamaClient, DEFAULT_TIMEOUT, DEFAULT_LONG_TIMEOUT
+from .config import OllamaConfig
 
 MAX_MESSAGE_LENGTH = 32000  # Limit message length to prevent excessive resource usage
 MAX_RESPONSE_CHUNK_SIZE = 4096  # Split large responses into chunks
@@ -24,11 +25,40 @@ executor = concurrent.futures.ThreadPoolExecutor(max_workers=4)
 class OllamaBaseHandler(APIHandler):
     """Base handler for Ollama API requests."""
     
+    def initialize(self, ollama_client=None):
+        if ollama_client is not None:
+            self.settings["ollama_client"] = ollama_client
+        elif "ollama_client" not in self.settings and hasattr(self.application, "settings"):
+            # Try to get the ollama_client from application settings as fallback
+            self.settings["ollama_client"] = self.application.settings.get("ollama_client")
+        
+        # Get config from application
+        self.settings["ollama_config"] = OllamaConfig(config=self.application.settings.get('config', {}))
+        
+        # Store config values in settings
+        self.settings["max_response_chunk_size"] = self.config.max_response_chunk_size
+        self.settings["enable_response_pagination"] = self.config.enable_response_pagination
+    
     @property
     def ollama_client(self) -> OllamaClient:
         """Get the Ollama client from the application settings."""
         return self.settings["ollama_client"]
         
+    @property
+    def config(self) -> OllamaConfig:
+        """Get the Ollama configuration."""
+        return self.settings.get("ollama_config", OllamaConfig(config=self.application.settings.get('config', {})))
+    
+    @property
+    def max_response_chunk_size(self) -> int:
+        """Get the maximum response chunk size from config."""
+        return self.settings.get("max_response_chunk_size", MAX_RESPONSE_CHUNK_SIZE)
+    
+    @property
+    def enable_response_pagination(self) -> bool:
+        """Check if response pagination is enabled."""
+        return self.settings.get("enable_response_pagination", True)
+    
     def validate_input(self, data, required_fields=None):
         """Validate input data and sanitize it.
         
@@ -81,6 +111,14 @@ class OllamaBaseHandler(APIHandler):
         Returns:
             List of content chunks
         """
+        # Use the configured chunk size if available
+        if hasattr(self, 'max_response_chunk_size'):
+            chunk_size = self.max_response_chunk_size
+            
+        # Skip pagination if it's disabled or content is small enough
+        if hasattr(self, 'enable_response_pagination') and not self.enable_response_pagination:
+            return [content]
+            
         if not isinstance(content, str) or len(content) <= chunk_size:
             return [content]
             
@@ -277,9 +315,9 @@ class OllamaChatHandler(OllamaBaseHandler):
                         # Try a direct API call if needed
                         try:
                             print(f"OllamaChatHandler.post: Attempting direct API call as fallback")
-                    url = f"{self.ollama_client.base_url}/api/chat"
-                    payload = {
-                        "model": model,
+                            url = f"{self.ollama_client.base_url}/api/chat"
+                            payload = {
+                                "model": model,
                                 "messages": filtered_messages,
                                 "stream": False,
                                 "temperature": temperature
@@ -448,8 +486,8 @@ class OllamaCellContextHandler(OllamaBaseHandler):
             else:
                 if is_data_science:
                     system_prompt = "You are an AI assistant specializing in data science and Jupyter notebooks. Analyze the following code with focus on data science libraries like pandas, numpy, matplotlib, scikit-learn, etc."
-            else:
-                system_prompt = "You are an AI assistant helping with Jupyter notebooks. Analyze the following code."
+                else:
+                    system_prompt = "You are an AI assistant helping with Jupyter notebooks. Analyze the following code."
             
             messages = [
                 {"role": "system", "content": system_prompt},
@@ -461,84 +499,86 @@ class OllamaCellContextHandler(OllamaBaseHandler):
             
             # Process in a separate thread to avoid blocking the event loop
             def process_request():
-            try:
-                # Use the OllamaClient to handle API compatibility
-                client = self.ollama_client
-                print(f"OllamaCellContextHandler.post: Using Ollama client with base_url={client.base_url}")
-                
-                # First test the Ollama API directly to verify it's responsive
-                    test_url = f"{client.base_url}/api/tags"
-                    test_response = requests.get(test_url, timeout=10)
-                    test_response.raise_for_status()
+                try:
+                    # Use the OllamaClient to handle API compatibility
+                    client = self.ollama_client
+                    print(f"OllamaCellContextHandler.post: Using Ollama client with base_url={client.base_url}")
                     
-                    # Direct API call with optimized session
-                    session = requests.Session()
-                    direct_url = f"{client.base_url}/api/chat"
-                    direct_payload = {
-                        "model": model,
-                        "messages": messages,
-                        "stream": False
-                    }
-                    
+                    # First test the Ollama API directly to verify it's responsive
                     try:
-                        # First try the chat API
-                        direct_response = session.post(
-                        direct_url,
-                        json=direct_payload,
-                            timeout=timeout
-                    )
-                    
-                    # Check response status
-                    if direct_response.status_code == 404:
-                        # Fallback to generate API
-                        generate_url = f"{client.base_url}/api/generate"
-                        prompt = f"System: {system_prompt}\n\nUser: {question}:\n\n{cell_content}\n\nAssistant:"
+                        test_url = f"{client.base_url}/api/tags"
+                        test_response = requests.get(test_url, timeout=10)
+                        test_response.raise_for_status()
                         
-                        generate_payload = {
+                        # Direct API call with optimized session
+                        session = requests.Session()
+                        direct_url = f"{client.base_url}/api/chat"
+                        direct_payload = {
                             "model": model,
-                            "prompt": prompt,
+                            "messages": messages,
                             "stream": False
                         }
                         
-                            generate_response = session.post(
-                            generate_url,
-                            json=generate_payload,
+                        try:
+                            # First try the chat API
+                            direct_response = session.post(
+                                direct_url,
+                                json=direct_payload,
                                 timeout=timeout
-                        )
-                        generate_response.raise_for_status()
-                        generate_result = generate_response.json()
+                            )
+                            
+                            # Check response status
+                            if direct_response.status_code == 404:
+                                # Fallback to generate API
+                                generate_url = f"{client.base_url}/api/generate"
+                                prompt = f"System: {system_prompt}\n\nUser: {question}:\n\n{cell_content}\n\nAssistant:"
+                                
+                                generate_payload = {
+                                    "model": model,
+                                    "prompt": prompt,
+                                    "stream": False
+                                }
+                                
+                                generate_response = session.post(
+                                    generate_url,
+                                    json=generate_payload,
+                                    timeout=timeout
+                                )
+                                generate_response.raise_for_status()
+                                generate_result = generate_response.json()
+                                
+                                # Convert the generate response to chat format
+                                result = {
+                                    "message": {
+                                        "content": generate_result.get("response", "No response")
+                                    }
+                                }
+                            else:
+                                # Handle normal chat API response
+                                direct_response.raise_for_status()
+                                result = direct_response.json()
                         
-                        # Convert the generate response to chat format
-                        result = {
-                            "message": {
-                                "content": generate_result.get("response", "No response")
+                            # Ensure consistent response format
+                            if isinstance(result, dict):
+                                # Check if result has the expected structure
+                                if "message" in result and isinstance(result["message"], dict):
+                                    message_content = result["message"].get("content", "No response")
+                                else:
+                                    message_content = result.get("response", "No response")
+                                    
+                                return {"message": {"content": message_content}}
+                            else:
+                                # For any other type, convert to string
+                                return {"message": {"content": str(result)}}
+                                
+                        except requests.exceptions.Timeout:
+                            return {
+                                "error": "Request timed out. This may be due to complex code or high server load. Try simplifying your query or try again later."
                             }
-                        }
-                    else:
-                        # Handle normal chat API response
-                        direct_response.raise_for_status()
-                        result = direct_response.json()
-                
-                # Ensure consistent response format
-                if isinstance(result, dict):
-                    # Check if result has the expected structure
-                    if "message" in result and isinstance(result["message"], dict):
-                        message_content = result["message"].get("content", "No response")
-                    else:
-                        message_content = result.get("response", "No response")
-                            
-                            return {"message": {"content": message_content}}
-                else:
-                    # For any other type, convert to string
-                            return {"message": {"content": str(result)}}
-                            
-                    except requests.exceptions.Timeout:
-                        return {
-                            "error": "Request timed out. This may be due to complex code or high server load. Try simplifying your query or try again later."
-                        }
+                        except Exception as e:
+                            return {"error": str(e)}
                     except Exception as e:
-                        return {"error": str(e)}
-                        
+                        return {"error": f"Failed to connect to Ollama API: {str(e)}"}
                 except Exception as e:
                     return {"error": str(e)}
             
@@ -728,21 +768,31 @@ class OllamaTestHandler(OllamaBaseHandler):
             self.set_status(500)
             self.finish(json.dumps({"error": str(e)}))
 
-def setup_handlers(web_app, ollama_client):
-    """Set up the handlers for the Ollama API."""
+def setup_handlers(web_app, ollama_client, config=None):
+    """Set up the handlers for the Ollama API.
+    
+    Args:
+        web_app: The Jupyter web application
+        ollama_client: The Ollama client instance
+        config: The Ollama configuration (optional)
+    """
     host_pattern = ".*$"
     base_url = web_app.settings["base_url"]
     
     # Add the Ollama client to the application settings
     web_app.settings["ollama_client"] = ollama_client
     
+    # Add the Ollama configuration if provided
+    if config:
+        web_app.settings["ollama_config"] = config
+    
     # Define the routes
     handlers = [
-        (url_path_join(base_url, "api", "ollama", "models"), OllamaModelsHandler),
-        (url_path_join(base_url, "api", "ollama", "chat"), OllamaChatHandler),
-        (url_path_join(base_url, "api", "ollama", "embeddings"), OllamaEmbeddingsHandler),
-        (url_path_join(base_url, "api", "ollama", "cell-context"), OllamaCellContextHandler),
-        (url_path_join(base_url, "api", "ollama", "test"), OllamaTestHandler),
+        (url_path_join(base_url, "api", "ollama", "models"), OllamaModelsHandler, dict(ollama_client=ollama_client)),
+        (url_path_join(base_url, "api", "ollama", "chat"), OllamaChatHandler, dict(ollama_client=ollama_client)),
+        (url_path_join(base_url, "api", "ollama", "embeddings"), OllamaEmbeddingsHandler, dict(ollama_client=ollama_client)),
+        (url_path_join(base_url, "api", "ollama", "cell-context"), OllamaCellContextHandler, dict(ollama_client=ollama_client)),
+        (url_path_join(base_url, "api", "ollama", "test"), OllamaTestHandler, dict(ollama_client=ollama_client)),
     ]
     
     # Add the handlers to the web app

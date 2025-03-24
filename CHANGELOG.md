@@ -9,8 +9,39 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Bug Fixes
 - cell button response dialog is shifting its position [FIXED].
-### Improvements
 
+### Improvements
+- **Modern UI Redesign**: Completely revamped cell analysis dialog with a stylish, contemporary look
+- **Responsive Design**: 
+  - Added responsive width handling with proper media queries for all screen sizes
+  - Enhanced mobile and tablet support with flexible layouts
+  - Improved scaling behavior for small screens
+- **Theme Consistency**: 
+  - Fixed hardcoded colors and implemented proper JupyterLab theme variable usage
+  - Enhanced dark mode support with consistent styling
+  - Resolved Bootstrap integration conflicts with JupyterLab's native styling
+- **Loading Indicators**: 
+  - Improved loading spinner with better visual feedback
+  - Added estimated time remaining for data science operations
+  - Enhanced progress indicators for long-running operations
+- **Accessibility Enhancements**:
+  - Added proper semantic structure to dialog components
+  - Improved color contrast ratios for better readability
+  - Enhanced focus states for interactive elements
+- **UI Performance**:
+  - Optimized animations for dialog display/hide with smooth transitions
+  - Improved scrolling performance for large result sets
+  - Added custom scrollbar styling for better usability
+- **Browser Compatibility**:
+  - Added fallbacks for CSS variables in older browsers
+  - Fixed browser-specific CSS properties for cross-browser consistency
+  - Added vendor prefixes where needed
+- **Visual Polish**:
+  - Enhanced code blocks with better highlighting and shadows
+  - Improved table styling with sticky headers and better spacing
+  - Added subtle hover effects and transitions for interactive elements
+  - Refined typography with better spacing and readability
+  - Enhanced button styling with modern hover effects
 
 ## [1.1.1] - 2024-07-31
 

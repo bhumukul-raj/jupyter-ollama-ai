@@ -1,13 +1,34 @@
 from traitlets import Bool, Dict, Integer, List, Unicode
 from traitlets.config import Configurable
 import os
+import socket
+import logging
+
+# Configure logging
+logger = logging.getLogger("ollama_config")
 
 class OllamaConfig(Configurable):
     """Configuration for the Ollama integration."""
     
     base_url = Unicode(
         os.environ.get("OLLAMA_BASE_URL", "http://localhost:11434"),
-        help="Base URL for the Ollama API. Can be set with OLLAMA_BASE_URL environment variable.",
+        help="""
+        Base URL for the Ollama API. Can be set with OLLAMA_BASE_URL environment variable.
+        
+        IMPORTANT FOR CONTAINER USERS:
+        When running JupyterLab in a container with Ollama on the host machine, you CANNOT use
+        localhost or 127.0.0.1 as these refer to the container itself, not the host.
+        
+        Instead, try one of these options:
+        1. Use the host's IP address: http://<host-ip>:11434
+        2. For Docker on macOS/Windows: http://host.docker.internal:11434
+        3. For Docker on Linux (default bridge): http://172.17.0.1:11434
+        4. For Podman: http://host.containers.internal:11434
+        5. For other container engines, check their documentation for host access
+        
+        You can also try running your container with:
+        docker run --network=host ... (to share the host network)
+        """,
         config=True
     )
     
@@ -68,6 +89,20 @@ class OllamaConfig(Configurable):
         config=True
     )
     
+    # New options for large responses and memory management
+    max_response_chunk_size = Integer(
+        int(os.environ.get("OLLAMA_MAX_RESPONSE_CHUNK_SIZE", "4096")),
+        help="Maximum size of response chunks in characters. Can be set with OLLAMA_MAX_RESPONSE_CHUNK_SIZE environment variable.",
+        config=True
+    )
+    
+    # New option for pagination of large responses
+    enable_response_pagination = Bool(
+        os.environ.get("OLLAMA_ENABLE_PAGINATION", "true").lower() == "true",
+        help="Enable pagination for large responses to conserve memory. Can be set with OLLAMA_ENABLE_PAGINATION environment variable.",
+        config=True
+    )
+    
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         
@@ -77,19 +112,68 @@ class OllamaConfig(Configurable):
             if allowed_models_env:
                 self.allowed_models = [model.strip() for model in allowed_models_env.split(",")]
         
+        # Check if we're in a container and using localhost
+        if self._is_in_container() and (
+            "localhost" in self.base_url or "127.0.0.1" in self.base_url
+        ):
+            logger.warning(
+                "Container environment detected with localhost in Ollama URL. "
+                "This will not work for accessing Ollama on the host machine. "
+                "Please set OLLAMA_BASE_URL to a host-accessible address."
+            )
+            logger.warning(
+                "Suggested addresses to try: "
+                "http://host.docker.internal:11434 (Docker for Mac/Windows), "
+                "http://172.17.0.1:11434 (Docker for Linux), "
+                "http://host.containers.internal:11434 (Podman)"
+            )
+        
         # Log configuration for debugging
         if self.debug_mode:
-            print(f"OllamaConfig initialized with:")
-            print(f"  - base_url: {self.base_url}")
-            print(f"  - default_model: {self.default_model}")
-            print(f"  - request_timeout: {self.request_timeout}")
-            print(f"  - enabled: {self.enabled}")
+            logger.info(f"OllamaConfig initialized with:")
+            logger.info(f"  - base_url: {self.base_url}")
+            logger.info(f"  - default_model: {self.default_model}")
+            logger.info(f"  - request_timeout: {self.request_timeout}")
+            logger.info(f"  - enabled: {self.enabled}")
+            logger.info(f"  - max_response_chunk_size: {self.max_response_chunk_size}")
+            logger.info(f"  - enable_response_pagination: {self.enable_response_pagination}")
             
             # Check if we can connect to the configured URL
             try:
                 import requests
                 response = requests.head(f"{self.base_url}/api/tags", timeout=5)
-                print(f"  - Ollama API connection test: {'successful' if response.status_code < 400 else 'failed'} (status code {response.status_code})")
+                logger.info(f"  - Ollama API connection test: {'successful' if response.status_code < 400 else 'failed'} (status code {response.status_code})")
             except Exception as e:
-                print(f"  - Ollama API connection test: failed - {str(e)}")
-                print(f"  - NOTE: Please ensure Ollama is running at {self.base_url}") 
+                logger.info(f"  - Ollama API connection test: failed - {str(e)}")
+                logger.info(f"  - NOTE: Please ensure Ollama is running at {self.base_url}")
+    
+    def _is_in_container(self) -> bool:
+        """Check if we're running inside a container."""
+        # Check for Docker
+        if os.path.exists("/.dockerenv"):
+            return True
+            
+        # Check cgroup
+        if os.path.exists("/proc/1/cgroup"):
+            try:
+                with open("/proc/1/cgroup", 'r') as f:
+                    return 'docker' in f.read() or 'kubepods' in f.read()
+            except:
+                pass
+        
+        # Additional container detection methods
+        try:
+            # Check for container-specific environment variables
+            if os.environ.get("KUBERNETES_SERVICE_HOST") or os.environ.get("KUBERNETES_PORT"):
+                return True
+                
+            # Check for container-specific filesystems
+            if os.path.exists("/proc/self/cgroup"):
+                with open("/proc/self/cgroup", 'r') as f:
+                    content = f.read()
+                    if any(x in content for x in ['docker', 'kubepods', 'containerd', 'lxc']):
+                        return True
+        except:
+            pass
+                
+        return False 

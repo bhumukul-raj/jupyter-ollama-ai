@@ -11,6 +11,7 @@ import logging
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 import hashlib
+import subprocess
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -61,11 +62,74 @@ class OllamaClient:
                 # Try to resolve hostname first to detect network isolation issues
                 if self.base_url.startswith("http://") or self.base_url.startswith("https://"):
                     host = self.base_url.split("://")[1].split(":")[0]
-                    if host == "localhost":
+                    if host == "localhost" or host == "127.0.0.1":
                         # Check if we're in a container by looking for .dockerenv file
-                        if os.path.exists("/.dockerenv"):
-                            print("Warning: Running in a container but using localhost. This may not work properly.")
-                            print("Consider using host.docker.internal or the container's IP address instead.")
+                        in_container = False
+                        container_hints = ["/.dockerenv", "/proc/1/cgroup"]
+                        
+                        for hint in container_hints:
+                            if os.path.exists(hint):
+                                if hint == "/proc/1/cgroup":
+                                    with open(hint, 'r') as f:
+                                        if 'docker' in f.read() or 'kubepods' in f.read():
+                                            in_container = True
+                                else:
+                                    in_container = True
+                        
+                        if in_container:
+                            logger.warning("Detected containerized environment with localhost in Ollama URL.")
+                            logger.warning("This may cause connectivity issues.")
+                            
+                            # Try alternative hostnames common in container environments
+                            alt_hosts = [
+                                "host.docker.internal",  # Docker for Mac/Windows
+                                "172.17.0.1",           # Default Docker bridge on Linux
+                                "host.containers.internal", # Podman
+                                "gateway.docker.internal", # Some Docker configurations
+                                "172.18.0.1",           # Alternative Docker bridge
+                                "192.168.65.2"          # Docker Desktop for Mac
+                            ]
+                            
+                            # Add the Docker gateway
+                            try:
+                                # Try to get the default gateway address which is often the host
+                                gateway = subprocess.check_output(
+                                    "ip route | grep default | cut -d ' ' -f 3", 
+                                    shell=True, 
+                                    stderr=subprocess.DEVNULL
+                                ).decode().strip()
+                                if gateway and gateway not in alt_hosts:
+                                    alt_hosts.append(gateway)
+                            except Exception:
+                                pass
+                                
+                            success = False
+                            for alt_host in alt_hosts:
+                                try:
+                                    alt_url = self.base_url.replace(host, alt_host)
+                                    logger.info(f"Trying alternative host: {alt_url}")
+                                    test_response = requests.head(f"{alt_url}/api/tags", timeout=2)
+                                    if test_response.status_code < 400:
+                                        logger.info(f"Successfully connected using alternative host: {alt_host}")
+                                        logger.info(f"Consider updating your configuration to use {alt_url}")
+                                        
+                                        # Make a permanent note in the logs that this URL is working
+                                        logger.warning(f"CONNECTION SOLUTION: Set OLLAMA_BASE_URL={alt_url} in your environment")
+                                        
+                                        # Optionally, we could automatically use this working URL
+                                        # Uncomment the next line to enable this behavior
+                                        # self.base_url = alt_url
+                                        
+                                        success = True
+                                        break
+                                except Exception as e:
+                                    logger.info(f"Alternative host {alt_host} failed: {str(e)}")
+                                    
+                            if not success:
+                                logger.warning("All alternative host attempts failed. Container-to-host communication may not be possible.")
+                                logger.warning("You might need to manually configure the OLLAMA_BASE_URL to your host's IP address.")
+                                logger.warning("You may need to add '--network=host' to your docker run command.")
+                        
                         # Try to connect to the socket
                         try:
                             port = int(self.base_url.split(":")[-1].split("/")[0])
@@ -74,7 +138,7 @@ class OllamaClient:
                             s.connect((host, port))
                             s.close()
                         except Exception as e:
-                            print(f"Warning: Could not connect to socket {host}:{port} - {str(e)}")
+                            logger.warning(f"Could not connect to socket {host}:{port} - {str(e)}")
                             
                 # Check API version and capabilities
                 url = f"{self.base_url}/api/version"
@@ -84,11 +148,11 @@ class OllamaClient:
                         try:
                             version_info = response.json()
                             self._api_version = version_info.get("version", "unknown")
-                            print(f"Connected to Ollama API version: {self._api_version}")
+                            logger.info(f"Connected to Ollama API version: {self._api_version}")
                         except Exception:
-                            print("Connected to Ollama API, but could not parse version information")
+                            logger.info("Connected to Ollama API, but could not parse version information")
                     else:
-                        print(f"Connected to Ollama API, but version endpoint returned status {response.status_code}")
+                        logger.info(f"Connected to Ollama API, but version endpoint returned status {response.status_code}")
                 except Exception:
                     # Fall back to checking the tags endpoint
                     pass
@@ -114,7 +178,7 @@ class OllamaClient:
                 return True
                 
             except requests.RequestException as e:
-                print(f"Failed to connect to Ollama API at {self.base_url}: {str(e)}")
+                logger.error(f"Failed to connect to Ollama API at {self.base_url}: {str(e)}")
                 return False
         
     def list_models(self) -> List[Dict[str, Any]]:
