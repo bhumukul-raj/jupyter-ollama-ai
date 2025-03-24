@@ -1,90 +1,75 @@
-import React, { useState, useEffect } from 'react';
-import { searchIcon, buildIcon, bugIcon, userIcon } from '@jupyterlab/ui-components';
+import React, { useState, useEffect, useRef } from 'react';
 import { Cell } from '@jupyterlab/cells';
-import { ServerConnection } from '@jupyterlab/services';
 import ReactMarkdown from 'react-markdown';
-
 import { analyzeCell, CellAnalysisResult } from '../services/cell';
 import { analyzeCellContent } from '../services/ollama';
 
-interface CellContextMenuProps {
+/**
+ * Props for the CellContextMenu component
+ */
+export interface CellContextMenuProps {
   cell: Cell;
   onClose: () => void;
   selectedModel: string;
   initialAction?: string;
 }
 
-const CellContextMenu: React.FC<CellContextMenuProps> = ({
+/**
+ * A component that renders a context menu for analyzing cell content
+ */
+export const CellContextMenu: React.FC<CellContextMenuProps> = ({
   cell,
   onClose,
   selectedModel,
   initialAction
 }) => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string>('');
   const [result, setResult] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
   const [executionTime, setExecutionTime] = useState<number | null>(null);
-  const [animationClass, setAnimationClass] = useState<string>('');
+  const [animationClass, setAnimationClass] = useState<string>('animate-in');
   const [selectedAction, setSelectedAction] = useState<string | null>(null);
   const [estimatedTime, setEstimatedTime] = useState<string>('');
   const [isDataScienceQuery, setIsDataScienceQuery] = useState<boolean>(false);
+  
+  const resultRef = useRef<HTMLDivElement>(null);
+
+  // If an initial action is provided, execute it automatically
+  useEffect(() => {
+    if (initialAction) {
+      handleQuestionSelect(initialAction);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Auto-scroll to results when they are available
   useEffect(() => {
-    if (result) {
-      const resultContainer = document.querySelector('.result-container');
-      if (resultContainer) {
-        resultContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-      }
+    if (result && resultRef.current) {
+      resultRef.current.scrollIntoView({ behavior: 'smooth' });
     }
   }, [result]);
 
-  // Handle animation on component mount
-  useEffect(() => {
-    // Small delay to ensure DOM is ready for animation
-    setTimeout(() => {
-      setAnimationClass('animate-in');
-    }, 50);
-  }, []);
-
-  // Auto-trigger the specified action when component mounts
-  useEffect(() => {
-    if (initialAction) {
-      const actionMap = {
-        'explain': 'Explain this code',
-        'optimize': 'Optimize this code',
-        'debug': 'Find bugs',
-        'chat': 'Chat about code'
-      };
-      
-      const question = actionMap[initialAction];
-      if (question) {
-        handleQuestionSelect(question);
-      }
-    }
-  }, [initialAction]);
-
+  /**
+   * Get the content of the cell
+   */
   const getCellContent = (): string => {
-    try {
-      const content = cell.model.sharedModel.getSource();
-      console.log(`[DEBUG] Retrieved cell content (${content.length} chars)`);
-      return content;
-    } catch (error) {
-      console.error('[DEBUG] Error getting cell content:', error);
-      setError('Failed to retrieve cell content.');
+    const model = cell.model;
+    if (!model) {
       return '';
     }
+    return model.sharedModel?.getSource() || '';
   };
 
+  /**
+   * Get the type of the cell (code or markdown)
+   */
   const getCellType = (): string => {
-    try {
-      return cell.model.type === 'code' ? 'code' : 'markdown';
-    } catch (error) {
-      console.error('[DEBUG] Error getting cell type:', error);
-      return 'unknown';
-    }
+    return cell.model?.type || 'code';
   };
 
+  /**
+   * Handle selecting a question to ask about the cell
+   */
   const handleQuestionSelect = async (question: string) => {
     setIsLoading(true);
     setError('');
@@ -106,6 +91,8 @@ const CellContextMenu: React.FC<CellContextMenuProps> = ({
       setEstimatedTime('30-60 seconds for data analysis');
     }
     
+    const startTime = Date.now();
+    
     try {
       const cellContent = getCellContent();
       const cellType = getCellType();
@@ -117,6 +104,9 @@ const CellContextMenu: React.FC<CellContextMenuProps> = ({
         question,
         cellType
       );
+      
+      const endTime = Date.now();
+      setExecutionTime(endTime - startTime);
       
       if (result.error) {
         setError(result.error);
@@ -134,12 +124,16 @@ const CellContextMenu: React.FC<CellContextMenuProps> = ({
           const cellContent = getCellContent();
           const cellType = getCellType();
           
+          const fallbackStartTime = Date.now();
           const result = await analyzeCellContent(
             selectedModel,
             cellContent,
             cellType,
             question
           );
+          
+          const fallbackEndTime = Date.now();
+          setExecutionTime(fallbackEndTime - fallbackStartTime);
           
           if (result && result.content) {
             setResult(result.content);
@@ -158,74 +152,62 @@ const CellContextMenu: React.FC<CellContextMenuProps> = ({
     }
   };
 
-  const renderCodeBlock = (code: string, language = '') => {
+  /**
+   * Render a code block in the markdown
+   */
+  const renderCodeBlock = (props: any) => {
+    const { children, className, node, ...rest } = props;
+    const match = /language-(\w+)/.exec(className || '');
+    const language = match ? match[1] : '';
+    
     return (
-      <div className="code-block-wrapper mb-3">
-        <pre className="p-3 rounded border bg-light code-block">
-          <code className={language ? `language-${language}` : ''}>
-            {code}
-          </code>
-        </pre>
-      </div>
+      <pre className={`bg-light p-3 rounded border ${className}`}>
+        <code {...rest}>{children}</code>
+      </pre>
     );
   };
 
+  /**
+   * Handle closing the dialog
+   */
   const handleClose = () => {
-    // Animate out before fully closing
     setAnimationClass('animate-out');
+    // Wait for animation to complete before calling onClose
     setTimeout(() => {
       onClose();
-    }, 300); // Match the CSS animation duration
+    }, 200);
   };
 
-  // Define the actions, even though we don't show buttons now
-  const actions = [
-    {
-      label: 'Explain this code',
-      icon: searchIcon,
-      description: 'Get an explanation of what this code does',
-      buttonClass: 'btn-primary',
-      handler: () => handleQuestionSelect('Explain this code')
-    },
-    {
-      label: 'Optimize this code',
-      icon: buildIcon,
-      description: 'Get suggestions to improve this code',
-      buttonClass: 'btn-success',
-      handler: () => handleQuestionSelect('Optimize this code')
-    },
-    {
-      label: 'Find bugs',
-      icon: bugIcon,
-      description: 'Identify potential issues in this code',
-      buttonClass: 'btn-warning',
-      handler: () => handleQuestionSelect('Find bugs')
-    },
-    {
-      label: 'Chat about code',
-      icon: userIcon,
-      description: 'Have a conversation about this code',
-      buttonClass: 'btn-info',
-      handler: () => handleQuestionSelect('Chat about code')
+  /**
+   * Get the title for the dialog based on the selected action
+   */
+  const getDialogTitle = () => {
+    if (selectedAction) {
+      return <span>{selectedAction}</span>;
     }
+    return <span>AI Cell Analysis</span>;
+  };
+
+  // List of common questions to ask
+  const questions = [
+    'Explain this code',
+    'Check for errors',
+    'Optimize this code',
+    'Complete this code',
+    'Generate tests',
+    'Document this code',
+    'Analyze DataFrame',
+    'Suggest visualizations'
   ];
 
-  // Function to generate a title based on the selected action
-  const getDialogTitle = () => {
-    if (!selectedAction) return 'AI Assistant';
-    
-    const actionTitles = {
-      'Explain this code': 'AI Code Explanation',
-      'Optimize this code': 'AI Code Optimization',
-      'Find bugs': 'AI Code Analysis',
-      'Chat about code': 'AI Chat about Code'
-    };
-    
-    return actionTitles[selectedAction] || 'AI Assistant';
-  };
-
-  const cellContent = getCellContent();
-  const cellType = getCellType();
+  // For data science cells
+  const dataScienceQuestions = [
+    'Analyze DataFrame',
+    'Suggest visualizations',
+    'Improve data cleaning',
+    'Optimize data operations',
+    'Explain ML model'
+  ];
 
   return (
     <div className={`cell-context-menu ${animationClass}`}>
@@ -237,19 +219,48 @@ const CellContextMenu: React.FC<CellContextMenuProps> = ({
         <div className="card-body">
           <div className="code-section mb-4">
             <h6 className="mb-3 fw-bold border-bottom pb-2">
-              <i className="fa fa-code me-2"></i>
-              Cell content ({cellType}):
+              Cell Content <span className="badge bg-secondary ms-2">{getCellType()}</span>
             </h6>
-            <div className="bg-light rounded border p-3 mb-2 overflow-auto">
-              {renderCodeBlock(cellContent, cellType === 'code' ? 'python' : 'markdown')}
-            </div>
-            <div className="d-flex justify-content-end">
-              <small className="text-muted">
-                {cellContent.split('\n').length} lines • {cellContent.length} characters
-              </small>
+            <pre className="bg-light p-3 border rounded code-preview">
+              <code>{getCellContent().slice(0, 500)}{getCellContent().length > 500 ? '...' : ''}</code>
+            </pre>
+          </div>
+          
+          <div className="actions mb-4">
+            <h6 className="mb-3 fw-bold border-bottom pb-2">What would you like to do?</h6>
+            <div className="d-flex flex-wrap gap-2">
+              {(getCellType() === 'code' && getCellContent().toLowerCase().includes('import pandas') || 
+                getCellContent().toLowerCase().includes('pd.') || 
+                getCellContent().toLowerCase().includes('dataframe') ||
+                getCellContent().toLowerCase().includes('numpy') ||
+                getCellContent().toLowerCase().includes('plt.') ||
+                getCellContent().toLowerCase().includes('matplotlib')
+              ) ? 
+                dataScienceQuestions.map(q => (
+                  <button
+                    key={q}
+                    className={`btn btn-action ${selectedAction === q ? 'btn-primary' : 'btn-outline-primary'}`}
+                    onClick={() => handleQuestionSelect(q)}
+                    disabled={isLoading}
+                  >
+                    {q}
+                  </button>
+                )) :
+                questions.map(q => (
+                  <button
+                    key={q}
+                    className={`btn btn-action ${selectedAction === q ? 'btn-primary' : 'btn-outline-primary'}`}
+                    onClick={() => handleQuestionSelect(q)}
+                    disabled={isLoading}
+                  >
+                    {q}
+                  </button>
+                ))
+              }
             </div>
           </div>
           
+          {/* Loading indicator with progress and estimated time */}
           {isLoading && (
             <div className="alert alert-info mt-3 jp-AI-CellAnalysis-Loading">
               <div className="d-flex align-items-center">
@@ -266,14 +277,19 @@ const CellContextMenu: React.FC<CellContextMenuProps> = ({
             </div>
           )}
           
+          {/* Error message */}
           {error && (
             <div className="alert alert-danger mt-3">
               <strong>Error:</strong> {error}
             </div>
           )}
           
+          {/* Result presentation with special handling for data science content */}
           {result && (
-            <div className={`mt-3 jp-AI-CellAnalysis-Result ${isDataScienceQuery ? 'jp-AI-DataScience-Result' : ''}`}>
+            <div 
+              ref={resultRef}
+              className={`mt-3 jp-AI-CellAnalysis-Result ${isDataScienceQuery ? 'jp-AI-DataScience-Result' : ''}`}
+            >
               <ReactMarkdown
                 components={{
                   code: renderCodeBlock as React.ComponentType<any>,
@@ -284,7 +300,7 @@ const CellContextMenu: React.FC<CellContextMenuProps> = ({
                   ),
                   img: ({node, ...props}) => (
                     <div className="jp-AI-DataScience-Visualization">
-                      <img className="img-fluid" {...props} />
+                      <img className="img-fluid" {...props} alt="" />
                     </div>
                   )
                 }}
@@ -303,30 +319,4 @@ const CellContextMenu: React.FC<CellContextMenuProps> = ({
       </div>
     </div>
   );
-};
-
-// Use an interface definition instead of class
-export interface CellToolbarButtonOptions {
-  className: string;
-  onClick: () => void;
-  tooltip: string;
-  icon: any;
-  label: string;
-  cell: Cell;
-}
-
-export function createCellToolbarButton(cell: Cell): CellToolbarButtonOptions {
-  return {
-    className: 'jp-AI-CellToolbarButton',
-    onClick: () => {
-      // This will be overridden by the notebook extension
-      console.log('Cell toolbar button clicked');
-    },
-    tooltip: 'Ask AI about this cell',
-    icon: searchIcon,
-    label: 'Ask',
-    cell
-  };
-}
-
-export { CellContextMenu }; 
+}; 

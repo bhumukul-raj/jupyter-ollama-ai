@@ -1,17 +1,21 @@
 import React from 'react';
 import ReactMarkdown from 'react-markdown';
+import { IThemeManager } from '@jupyterlab/apputils';
 
 interface MessageProps {
   message: {
     id: string;
-    role: 'user' | 'assistant' | 'system';
+    role: 'user' | 'assistant' | 'system' | string;
     content: string;
     timestamp: Date;
   };
-  isDarkTheme: boolean;
+  themeManager?: IThemeManager;
 }
 
-export const ChatMessage: React.FC<MessageProps> = ({ message, isDarkTheme }) => {
+export const ChatMessage: React.FC<MessageProps> = ({ message, themeManager }) => {
+  // Determine if we're in dark theme
+  const isDarkTheme = themeManager?.theme === 'JupyterLab Dark' || false;
+  
   const formatTime = (date: Date): string => {
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };

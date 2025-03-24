@@ -224,9 +224,10 @@ const plugin: JupyterFrontEndPlugin<void> = {
           }
 
           // Create new widget
-          const chatWidget = new ChatWidget({
-            themeManager: themeManager
-          });
+          const chatWidget = new ChatWidget(
+            themeManager,
+            "Welcome to the JupyterLab AI Assistant. How can I help with your data science tasks?"
+          );
           chatWidget.id = id;
           chatWidget.title.closable = true;
 

@@ -3,27 +3,84 @@
   "jupyter.lab.toolbars": {
     "Cell": [
       {
-        "name": "ai-explain",
-        "command": "ai-assistant:analyze-cell",
+        "name": "ai-analyze",
+        "command": "jupyterlab-ai-assistant:analyze-cell",
         "icon": "ui-components:search",
         "rank": 10
       },
       {
-        "name": "ai-optimize",
-        "command": "ai-assistant:optimize-cell",
-        "icon": "ui-components:build",
+        "name": "ai-explain",
+        "command": "jupyterlab-ai-assistant:explain-cell",
+        "icon": "ui-components:info",
         "rank": 20
       },
       {
-        "name": "ai-debug",
-        "command": "ai-assistant:debug-cell",
-        "icon": "ui-components:bug",
+        "name": "ai-optimize",
+        "command": "jupyterlab-ai-assistant:optimize-cell",
+        "icon": "ui-components:build",
         "rank": 30
       },
       {
-        "name": "ai-chat",
-        "command": "ai-assistant:chat-cell",
-        "icon": "ui-components:user",
+        "name": "ai-visualize",
+        "command": "jupyterlab-ai-assistant:visualize-cell",
+        "icon": "ui-components:search",
+        "rank": 40
+      }
+    ]
+  },
+  "jupyter.lab.menus": {
+    "main": [
+      {
+        "id": "jp-mainmenu-ai-assistant",
+        "label": "AI Assistant",
+        "items": [
+          {
+            "command": "jupyterlab-ai-assistant:open-chat",
+            "rank": 0
+          },
+          {
+            "type": "separator",
+            "rank": 10
+          },
+          {
+            "command": "jupyterlab-ai-assistant:analyze-cell",
+            "rank": 20
+          },
+          {
+            "command": "jupyterlab-ai-assistant:explain-cell",
+            "rank": 30
+          },
+          {
+            "command": "jupyterlab-ai-assistant:optimize-cell",
+            "rank": 40
+          },
+          {
+            "command": "jupyterlab-ai-assistant:visualize-cell",
+            "rank": 50
+          }
+        ],
+        "rank": 80
+      }
+    ],
+    "context": [
+      {
+        "command": "jupyterlab-ai-assistant:analyze-cell",
+        "selector": ".jp-Cell",
+        "rank": 10
+      },
+      {
+        "command": "jupyterlab-ai-assistant:explain-cell",
+        "selector": ".jp-Cell",
+        "rank": 20
+      },
+      {
+        "command": "jupyterlab-ai-assistant:optimize-cell",
+        "selector": ".jp-Cell",
+        "rank": 30
+      },
+      {
+        "command": "jupyterlab-ai-assistant:visualize-cell",
+        "selector": ".jp-Cell",
         "rank": 40
       }
     ]

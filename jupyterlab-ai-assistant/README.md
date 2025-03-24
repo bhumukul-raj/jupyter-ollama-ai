@@ -5,7 +5,7 @@
 [![JupyterLab](https://img.shields.io/badge/JupyterLab-4.x-orange.svg)](https://jupyterlab.readthedocs.io/en/stable/)
 [![Python](https://img.shields.io/badge/Python-3.8+-blue.svg)](https://www.python.org/downloads/)
 
-A comprehensive JupyterLab extension that integrates Ollama-powered AI assistance directly into notebooks with cell-specific context awareness and responsive design.
+A comprehensive JupyterLab extension that integrates Ollama-powered AI assistance directly into notebooks with cell-specific context awareness and responsive design. Now with enhanced data science capabilities!
 
 ---
 
@@ -18,6 +18,9 @@ A comprehensive JupyterLab extension that integrates Ollama-powered AI assistanc
 - **Theme-Aware UI**: Seamless integration with JupyterLab's light/dark themes
 - **Multi-Model Support**: Use any Ollama model installed on your system
 - **Code Analysis**: Explain, optimize, or debug code directly from your notebooks
+- **Data Science Optimized**: Enhanced performance and analysis for pandas DataFrames, visualizations, and ML models
+- **Smart Timeouts**: Intelligent timeout management for data science workloads
+- **Beautiful Visualization Support**: Better rendering of tables, charts and data visualizations
 
 ## 🔍 How It Works
 
@@ -42,6 +45,9 @@ Cell toolbar buttons provide quick access to:
 - 🐞 Debug issues
 - 📊 Analyze data processing logic
 - 💬 Ask custom questions about the cell content
+- 📈 Analyze DataFrames (data science)
+- 🎨 Suggest visualizations (data science)
+- 🤖 Explain ML models (data science)
 
 ## 📋 Prerequisites
 
@@ -154,6 +160,26 @@ You should see `jupyterlab-ai-assistant` listed in the output.
 - **Documentation**: "Generate docstrings for this class"
 - **Learning**: "Explain this algorithm step by step"
 
+### Data Science Features
+
+The extension includes specialized support for data science workflows:
+
+- **DataFrame Analysis**: Get instant insights on your pandas DataFrames
+- **Visualization Recommendations**: Receive smart suggestions for best ways to visualize your data
+- **ML Model Explanations**: Understand complex machine learning model code
+- **Performance Optimization**: Get suggestions to speed up data processing operations
+- **Adaptive Timeouts**: Smart handling of long-running data science operations
+- **Progress Indicators**: See estimated time remaining for complex operations
+- **Data-Aware UI**: Special rendering for data tables and visualizations
+
+### Common Data Science Use Cases
+
+- **Data Exploration**: "Analyze this DataFrame and show key statistics"
+- **Visualization Help**: "Suggest appropriate visualizations for this dataset"
+- **Model Understanding**: "Explain what this machine learning model is doing"
+- **Data Cleaning**: "Suggest improvements for my data preprocessing"
+- **Performance**: "Optimize these pandas operations for better performance"
+
 ## ⚙️ Configuration
 
 You can configure the extension in JupyterLab's Settings menu:
@@ -172,17 +198,20 @@ Available settings:
   "maxTokens": 4096,
   "defaultTemperature": 0.7,
   "requestTimeout": 60,
-  "debugMode": false
+  "debugMode": false,
+  "dataScienceOptimization": true,
+  "adaptiveTimeouts": true
 }
 ```
 
 ## 💻 System Requirements
 
 For the best experience, we recommend:
-- A system with at least 8GB RAM
+- A system with at least 8GB RAM (16GB+ recommended for data science workloads)
 - Sufficient disk space for Ollama models (models range from 1GB to 10GB+ each)
 - A modern web browser (Chrome, Firefox, Safari, Edge)
 - Python 3.8 or newer
+- For data science features: At least 4 CPU cores for optimal performance
 
 ## 🔧 Troubleshooting
 

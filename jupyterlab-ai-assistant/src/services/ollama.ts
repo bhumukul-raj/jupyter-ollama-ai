@@ -23,91 +23,92 @@ export async function requestAPI<T>(
     endPoint
   );
   
-  // Enhanced request logging
+  // Log request information
   console.log(`[DEBUG] Making ${init.method || 'GET'} request to: ${url}`);
-  if (init.body) {
-    try {
-      const bodyData = JSON.parse(init.body as string);
-      console.log('[DEBUG] Request payload:', JSON.stringify(bodyData, null, 2));
-    } catch (e) {
-      console.log('[DEBUG] Request body:', init.body);
+  
+  // Create headers with XSRF token for POST requests
+  if (init.method === 'POST' || init.method === 'PUT' || init.method === 'DELETE') {
+    // Ensure headers object exists
+    init.headers = init.headers || {};
+    
+    // Add XSRF token from settings if available
+    if (settings.token) {
+      (init.headers as any)['X-XSRFToken'] = settings.token;
+    }
+    
+    // Ensure content type is set for JSON requests
+    if (!init.headers['Content-Type'] && init.body) {
+      (init.headers as any)['Content-Type'] = 'application/json';
+    }
+    
+    // Log the request headers and body
+    console.log('[DEBUG] Request headers:', init.headers);
+    if (init.body) {
+      try {
+        const bodyData = JSON.parse(init.body as string);
+        console.log('[DEBUG] Request payload:', JSON.stringify(bodyData, null, 2));
+      } catch (e) {
+        console.log('[DEBUG] Request body:', init.body);
+      }
     }
   }
   
   // Make the request
-  const startTime = Date.now();
   let response: Response;
   try {
     console.log(`[DEBUG] Sending request to ${endPoint}...`);
     response = await ServerConnection.makeRequest(url, init, settings);
-    console.log(`[DEBUG] Response received in ${Date.now() - startTime}ms, status: ${response.status}`);
+    console.log(`[DEBUG] Response status: ${response.status}`);
   } catch (error) {
-    console.error('[DEBUG] Network error making request:', error);
+    console.error('[ERROR] Network error making request:', error);
     throw new ServerConnection.NetworkError(error as any);
   }
   
-  // For successful responses, get the data
+  // Handle the response
   if (response.ok) {
     try {
-      // For empty responses, return an empty object
+      // Get response text
       const text = await response.text();
       console.log(`[DEBUG] Response size: ${text.length} bytes`);
       
+      // Handle empty responses
       if (!text || text.trim() === '') {
         console.log('[DEBUG] Empty response received');
         return {} as T;
       }
       
-      // Try to parse the response as JSON
+      // Parse JSON response
       try {
         const data = JSON.parse(text);
         console.log('[DEBUG] Response parsed successfully:', JSON.stringify(data, null, 2).substring(0, 1000) + (JSON.stringify(data, null, 2).length > 1000 ? '... (truncated)' : ''));
         return data as T;
       } catch (e) {
-        console.error('[DEBUG] Error parsing JSON response:', e);
-        console.debug('[DEBUG] Response text (first 500 chars):', text.substring(0, 500));
-        throw new Error(`Invalid JSON response: ${e.message}`);
+        console.log('[DEBUG] Response is not JSON, returning as text');
+        return text as unknown as T;
       }
     } catch (error) {
-      console.error('[DEBUG] Error processing response:', error);
-      throw new ServerConnection.ResponseError(
-        response,
-        `Failed to process response: ${error.message}`
-      );
+      console.error('[ERROR] Error processing response:', error);
+      throw new ServerConnection.ResponseError(response);
     }
-  }
-  
-  // For error responses, try to get error details
-  try {
-    const text = await response.text();
-    let errorData;
-    
-    // Try to parse the error response as JSON
+  } else {
+    // Handle error responses
+    let errorMessage: string;
     try {
-      errorData = JSON.parse(text);
-    } catch (e) {
-      // If parsing fails, use the text directly
-      throw new ServerConnection.ResponseError(
-        response,
-        `Server error: ${text.substring(0, 200)}`
-      );
+      const text = await response.text();
+      try {
+        // Try to parse error as JSON
+        const data = JSON.parse(text);
+        errorMessage = data.message || data.error || text;
+      } catch {
+        // Use text as is if not JSON
+        errorMessage = text;
+      }
+    } catch {
+      errorMessage = response.statusText;
     }
     
-    // Use the parsed error message or a default message
-    throw new ServerConnection.ResponseError(
-      response,
-      errorData.error || `Server error: ${response.status} ${response.statusText}`
-    );
-  } catch (error) {
-    if (error instanceof ServerConnection.ResponseError) {
-      throw error;
-    }
-    
-    // If all else fails, throw a generic error
-    throw new ServerConnection.ResponseError(
-      response,
-      `Unknown error: ${response.status} ${response.statusText}`
-    );
+    console.error(`[ERROR] Server error: ${response.status} - ${errorMessage}`);
+    throw new ServerConnection.ResponseError(response, errorMessage);
   }
 }
 
@@ -134,12 +135,12 @@ export async function getAvailableModels(): Promise<any[]> {
 }
 
 /**
- * Send a chat message to Ollama
+ * Send a chat message to the Ollama API
  * 
  * @param model The model to use
  * @param messages The chat messages
  * @param options Additional options
- * @returns The response from Ollama
+ * @returns The response from Ollama (AsyncGenerator for streaming, object for non-streaming)
  */
 export async function sendChatMessage(
   model: string,
@@ -150,20 +151,114 @@ export async function sendChatMessage(
     // Log the request for debugging
     console.log(`Sending chat message to model ${model} with ${messages.length} messages`);
     
-    const data = await requestAPI<any>('chat', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        model,
-        messages,
-        stream: false,
-        ...options
-      })
-    });
+    // Check if streaming is requested
+    const isStreaming = options.stream === true;
     
-    return data;
+    if (isStreaming) {
+      // For streaming, we'll use requestAPI and then handle the response as a stream
+      // This ensures proper XSRF handling
+      
+      // Prepare headers and URL
+      const settings = ServerConnection.makeSettings();
+      const url = URLExt.join(
+        settings.baseUrl,
+        'api',
+        'ollama',
+        'chat'
+      );
+      
+      // Create a custom fetch request that processes the stream
+      // but let ServerConnection handle the XSRF token
+      try {
+        // First make a normal request using ServerConnection which handles XSRF token
+        // but manually set options to handle streaming
+        const init: RequestInit = {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'text/event-stream'
+          },
+          body: JSON.stringify({
+            model,
+            messages,
+            ...options
+          })
+        };
+        
+        console.log('[DEBUG] Making streaming request with ServerConnection');
+        const response = await ServerConnection.makeRequest(url, init, settings);
+        
+        if (!response.ok) {
+          const errorText = await response.text();
+          return { error: `Error: ${response.status} - ${errorText}` };
+        }
+        
+        // Now handle the streaming response
+        const reader = response.body?.getReader();
+        if (!reader) {
+          return { error: 'Failed to get reader from response' };
+        }
+        
+        const decoder = new TextDecoder();
+        
+        // Create an async generator to yield chunks as they arrive
+        async function* streamGenerator() {
+          try {
+            while (true) {
+              const { done, value } = await reader.read();
+              if (done) {
+                yield { done: true };
+                break;
+              }
+              
+              const chunk = decoder.decode(value);
+              console.log('[DEBUG] Received chunk:', chunk.substring(0, 50) + (chunk.length > 50 ? '...' : ''));
+              
+              const lines = chunk.split('\n\n');
+              
+              for (const line of lines) {
+                if (line.startsWith('data: ')) {
+                  try {
+                    const jsonStr = line.slice(6);
+                    if (jsonStr.trim()) {
+                      const json = JSON.parse(jsonStr);
+                      yield json;
+                    }
+                  } catch (e) {
+                    console.error('Error parsing JSON from stream:', e);
+                  }
+                }
+              }
+            }
+          } catch (e) {
+            console.error('[ERROR] Error reading stream:', e);
+            yield { error: `Error reading stream: ${e}` };
+          } finally {
+            reader.releaseLock();
+          }
+        }
+        
+        return streamGenerator();
+      } catch (error) {
+        console.error('[ERROR] Error in streaming request:', error);
+        return { error: `Error in streaming request: ${error.message || error}` };
+      }
+    } else {
+      // For non-streaming, use requestAPI as before
+      const data = await requestAPI<any>('chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          model,
+          messages,
+          ...options
+        })
+      });
+      
+      return data;
+    }
   } catch (error) {
     console.error('Error sending chat message:', error);
     throw error;
@@ -195,51 +290,32 @@ export async function analyzeCellContent(
     console.log(`[DEBUG] - Question: ${question}`);
     
     const requestStartTime = Date.now();
-    const data = await requestAPI<any>('cell-context', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        model,
-        cell_content: cellContent,
-        cell_type: cellType,
-        question
-      })
-    });
     
-    console.log(`[DEBUG] Cell analysis completed in ${Date.now() - requestStartTime}ms`);
-    
-    // Add response validation with logging
-    if (!data || typeof data !== 'object') {
-      console.error('[DEBUG] Invalid response format:', data);
-      throw new Error('Invalid response format from server');
+    // Add a try/catch specifically for the request to provide better error handling
+    try {
+      const data = await requestAPI<any>('cell-context', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          model,
+          cell_content: cellContent,
+          cell_type: cellType,
+          question
+        })
+      });
+      
+      console.log(`[DEBUG] Cell analysis completed in ${Date.now() - requestStartTime}ms`);
+      
+      return data;
+    } catch (requestError) {
+      console.error('[ERROR] Cell analysis request failed:', requestError);
+      // Rethrow with more context
+      throw new Error(`Cell analysis failed: ${requestError.message || requestError}`);
     }
-
-    // Check for error in response
-    if ('error' in data) {
-      console.error('[DEBUG] Server returned error:', data.error);
-      throw new Error(data.error as string);
-    }
-
-    // Log successful response details
-    if (data.message?.content) {
-      console.log('[DEBUG] Response content length:', data.message.content.length);
-      console.log('[DEBUG] Response preview:', data.message.content.substring(0, 100) + 
-        (data.message.content.length > 100 ? '...' : ''));
-    } else {
-      console.log('[DEBUG] Response structure:', Object.keys(data).join(', '));
-    }
-    
-    return data;
   } catch (error) {
-    console.error('[DEBUG] Error analyzing cell content:', error);
-    console.error('[DEBUG] Error context:', {
-      model,
-      cellType,
-      contentLength: cellContent.length,
-      questionType: question
-    });
+    console.error('[ERROR] Error in analyzeCellContent:', error);
     throw error;
   }
 } 

@@ -1,0 +1,140 @@
+/* Loading indicator for cell analysis */
+.jp-AI-CellAnalysis-Loading {
+  display: flex;
+  align-items: center;
+  padding: 8px 16px;
+  margin: 8px 0;
+  background-color: var(--jp-layout-color2, #f5f5f5);
+  border-radius: 4px;
+  border-left: 3px solid var(--jp-brand-color1, #2196f3);
+  font-size: var(--jp-ui-font-size1, 13px);
+  color: var(--jp-ui-font-color1, #212121);
+}
+
+.jp-AI-CellAnalysis-LoadingSpinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--jp-border-color2, #e0e0e0);
+  border-top: 2px solid var(--jp-brand-color1, #2196f3);
+  border-radius: 50%;
+  margin-right: 12px;
+  animation: jp-AI-CellAnalysis-spin 1s linear infinite;
+}
+
+.jp-AI-CellAnalysis-LoadingText {
+  flex: 1;
+}
+
+/* For data science visualizations */
+.jp-AI-DataScience-Visualization {
+  margin: 16px 0;
+  padding: 16px;
+  background-color: var(--jp-layout-color2, #f5f5f5);
+  border-radius: 4px;
+  border-left: 3px solid var(--jp-brand-color1, #2196f3);
+}
+
+.jp-AI-DataScience-Table {
+  margin: 16px 0;
+  max-height: 400px;
+  overflow-y: auto;
+  border-radius: 4px;
+  border: 1px solid var(--jp-border-color2, #e0e0e0);
+}
+
+.jp-AI-DataScience-Table table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.jp-AI-DataScience-Table th {
+  background-color: var(--jp-layout-color3, #eeeeee);
+  font-weight: bold;
+  text-align: left;
+  padding: 8px;
+  border-bottom: 2px solid var(--jp-border-color2, #e0e0e0);
+}
+
+.jp-AI-DataScience-Table td {
+  padding: 8px;
+  border-bottom: 1px solid var(--jp-border-color2, #e0e0e0);
+}
+
+.jp-AI-DataScience-Table tr:hover {
+  background-color: var(--jp-layout-color3, #eeeeee);
+}
+
+/* Results container */
+.jp-AI-CellAnalysis-Result {
+  margin: 16px 0;
+  padding: 16px;
+  background-color: var(--jp-layout-color2, #f5f5f5);
+  border-radius: 4px;
+  border-left: 3px solid var(--jp-brand-color1, #2196f3);
+}
+
+.jp-AI-CellAnalysis-Result h3 {
+  margin-top: 0;
+  color: var(--jp-ui-font-color0, #000);
+  font-size: var(--jp-ui-font-size2, 16px);
+}
+
+.jp-AI-CellAnalysis-Result pre {
+  background-color: var(--jp-layout-color3, #eeeeee);
+  padding: 8px;
+  border-radius: 4px;
+  overflow-x: auto;
+  font-family: var(--jp-code-font-family, monospace);
+  font-size: var(--jp-code-font-size, 13px);
+}
+
+/* Time remaining indicator */
+.jp-AI-CellAnalysis-TimeRemaining {
+  font-size: var(--jp-ui-font-size0, 11px);
+  color: var(--jp-ui-font-color2, #666);
+  margin-top: 4px;
+  text-align: right;
+}
+
+/* Animation for spinner */
+@keyframes jp-AI-CellAnalysis-spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Dark theme adjustments */
+.jp-theme-dark .jp-AI-CellAnalysis-Loading {
+  background-color: var(--jp-layout-color2, #222);
+  color: var(--jp-ui-font-color1, #eee);
+}
+
+.jp-theme-dark .jp-AI-CellAnalysis-LoadingSpinner {
+  border-color: var(--jp-border-color2, #444);
+  border-top-color: var(--jp-brand-color1, #2196f3);
+}
+
+.jp-theme-dark .jp-AI-DataScience-Visualization,
+.jp-theme-dark .jp-AI-CellAnalysis-Result {
+  background-color: var(--jp-layout-color2, #222);
+}
+
+.jp-theme-dark .jp-AI-DataScience-Table {
+  border-color: var(--jp-border-color2, #444);
+}
+
+.jp-theme-dark .jp-AI-DataScience-Table th {
+  background-color: var(--jp-layout-color3, #333);
+  border-bottom-color: var(--jp-border-color2, #444);
+}
+
+.jp-theme-dark .jp-AI-DataScience-Table td {
+  border-bottom-color: var(--jp-border-color2, #444);
+}
+
+.jp-theme-dark .jp-AI-DataScience-Table tr:hover {
+  background-color: var(--jp-layout-color3, #333);
+}
+
+.jp-theme-dark .jp-AI-CellAnalysis-Result pre {
+  background-color: var(--jp-layout-color3, #333);
+} 
